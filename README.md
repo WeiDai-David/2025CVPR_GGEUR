@@ -315,10 +315,66 @@ clip_test_features/{域名称}/{域名称}_test_features.npy
 clip_test_features/{域名称}/{域名称}_test_labels.npy
 ```
 6.提取原型
-
-
+通过前面得到的客户端类别索引文件，可以提取对应的类原型
+执行脚本:
+```bash
+python 提取原型.py
+```
+运行结果:
+```bash
+clip_prototypes/{域名称}/client_{域对应的客户端编号}_class_{0~9}_prototype.npy
+```
+7.几何方向
+在流形空间的视角，跨域的本质是类对应的流形分布发生横向的偏移，几何方向并没有变化，因此我们可以利用多域的合并特征来表示几何形状
+```bash
+report_file 字符串 域和客户端的映射文件
+```
+执行脚本:
+```bash
+python 聚合协方差矩阵4x10=4.py
+```
+运行结果:
+```bash
+cov_matrix_output/class_{0~9}_cov_matrix.npy
+```
+8.几何引导的数据增强
+现在我们已经得到了分布的几何方向和多个域对应的类原型，在客户端进行数据增强，客户端本域，进行单域数据增强策略，非本域，则以类原型为中心进行几何方向的增强，这样即使在客户端视角，也能学习到跨域的特征，从而有效的缓解域偏移带来的偏差
+执行脚本:
+```bash
+扩充-放大聚合协方差矩阵-类原型-类中心.py
+```
+运行结果:
+```bash
+argumented_clip_features/{域名称}/client_{域对应的客户端编号}_class_{0~9}/final_embeddings_filled.npy
+argumented_clip_features/{域名称}/client_{域对应的客户端编号}_class_{0~9}/labels_filled.npy
+```
+9.不同联邦架构训练
+执行脚本:
+```bash
+python FedAvg联邦原始特征.py 
+python FedAvg联邦补全特征.py 
+python FedNTD联邦原始特征.py
+python FedNTD联邦补全特征.py
+python FedOpt联邦原始特征.py
+python FedOpt联邦补全特征.py
+python FedProx联邦原始特征.py
+python FedProx联邦补全特征.py
+python MOON联邦原始特征.py
+python MOON联邦补全特征.py
+python FedDyn联邦原始特征.py
+python FedDyn联邦补全特征.py
+python FedProto联邦原始特征.py
+python FedProto联邦补全特征.py
+python SCAFFOLD联邦原始特征.py
+python SCAFFOLD联邦补全特征.py
+```
 
 PACS:
+
+
 office_caltech_10:
+
+
+
 Office-Home-LDS:
 

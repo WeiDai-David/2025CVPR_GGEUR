@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 import torch.nn.functional as F
+import copy
 import matplotlib.pyplot as plt
 
 # 设置设备
@@ -22,88 +23,70 @@ class MyDataset(Dataset):
     def __getitem__(self, idx):
         return self.features[idx], self.labels[idx]
 
-# 定义简单的分类模型 (基于512维特征直接分类)
+# 定义简单的分类模型
 class MyNet(nn.Module):
-    def __init__(self, num_classes=10):
+    def __init__(self, input_dim=512, num_classes=10):
         super(MyNet, self).__init__()
-        self.fc3 = nn.Linear(512, num_classes)  # 512维特征到10分类
+        self.fc3 = nn.Linear(input_dim, num_classes)
 
     def forward(self, x):
-        outputs = self.fc3(x)  # 进行分类
-        return outputs  # 只返回分类输出
+        return F.softmax(self.fc3(x), dim=1)
 
-# 初始化类原型
-def initialize_prototypes(num_classes=10, feature_dim=512):
-    return torch.zeros((num_classes, feature_dim), device=device)
-
-# FedProto 训练函数 (包含近端项)
-def train_fedproto(model, global_model, prototypes, dataloader, criterion, optimizer, device, lambda_proto=0.5, lambda_prox=2):
+# 训练函数，包含FedProto的Proximal weight λ项
+def train_fedproto(model, dataloader, criterion, optimizer, device, global_protos, local_protos, lam=2):
     model.train()
     running_loss, correct, total = 0.0, 0, 0
+    agg_protos_label = {}
+    protos_label_num = {}
+    mse_loss = nn.MSELoss()
+
     for inputs, labels in dataloader:
         inputs, labels = inputs.to(device), labels.to(device)
         optimizer.zero_grad()
 
-        # 获取本地模型输出
-        outputs = model(inputs)  # 分类输出已经是基于512维特征的
+        # 获取模型输出
+        outputs = model(inputs)
+        loss_ce = criterion(outputs, labels)
 
-        # 计算分类损失
-        classification_loss = criterion(outputs, labels)
+        # 原型损失
+        if global_protos:
+            new_features = inputs.clone().detach()  # 直接使用 CLIP 提取的特征
+            for i, label in enumerate(labels):
+                if label.item() in global_protos:
+                    new_features[i] = global_protos[label.item()][0]
+            loss_proto = mse_loss(new_features, inputs) * lam
+        else:
+            loss_proto = torch.tensor(0.0, device=device)
 
-        # 计算原型对比损失
-        proto_loss = 0
-        for i in range(len(labels)):
-            class_proto = prototypes[labels[i].item()]
-            proto_loss += torch.norm(inputs[i] - class_proto) ** 2  # 使用输入特征与原型进行比较
-
-        proto_loss = proto_loss / len(labels)
-
-        # 计算近端正则化项（FedProx风格的损失）
-        proximal_term = 0
-        for w_local, w_global in zip(model.parameters(), global_model.parameters()):
-            proximal_term += (lambda_prox / 2) * torch.norm(w_local - w_global) ** 2
-
-        # 总损失 = 分类损失 + 原型对比损失 + 近端项
-        total_loss = classification_loss + lambda_proto * proto_loss + proximal_term
-
-        total_loss.backward()
+        # 总损失
+        loss = loss_ce + loss_proto
+        loss.backward()
         optimizer.step()
 
-        running_loss += total_loss.item() * inputs.size(0)
+        running_loss += loss.item() * inputs.size(0)
         _, predicted = torch.max(outputs, 1)
         total += labels.size(0)
         correct += (predicted == labels).sum().item()
 
+        # 更新本地原型
+        with torch.no_grad():
+            for i in range(len(labels)):
+                label = labels[i].item()
+                if label in agg_protos_label:
+                    agg_protos_label[label] += inputs[i].detach()  # 直接使用 CLIP 特征
+                    protos_label_num[label] += 1
+                else:
+                    agg_protos_label[label] = inputs[i].detach().clone()
+                    protos_label_num[label] = 1
+
+    # 计算每个类的本地原型
+    for label in agg_protos_label:
+        agg_protos_label[label] = agg_protos_label[label] / protos_label_num[label]
+    local_protos.update(agg_protos_label)
+
     epoch_loss = running_loss / len(dataloader.dataset)
     epoch_accuracy = correct / total if total > 0 else 0
     return epoch_loss, epoch_accuracy
-
-# 更新类原型
-def update_prototypes(model, dataloader, prototypes, num_classes=10):
-    model.eval()
-    class_features = [torch.zeros_like(prototypes[0]) for _ in range(num_classes)]
-    class_counts = [0 for _ in range(num_classes)]
-
-    with torch.no_grad():
-        for inputs, labels in dataloader:
-            inputs, labels = inputs.to(device), labels.to(device)
-            features = inputs  # 使用输入特征（CLIP提取的512维）
-
-            for i, label in enumerate(labels):
-                class_features[label.item()] += features[i]
-                class_counts[label.item()] += 1
-
-    for c in range(num_classes):
-        if class_counts[c] > 0:
-            prototypes[c] = class_features[c] / class_counts[c]
-
-    return prototypes
-
-# FedProto 聚合函数 (聚合类原型)
-def fedproto_aggregation(global_prototypes, client_prototypes, num_clients):
-    for c in range(len(global_prototypes)):
-        global_prototypes[c] = torch.stack([client_prototypes[i][c] for i in range(num_clients)]).mean(0)
-    return global_prototypes
 
 # 测试函数
 def test(model, dataloader, device):
@@ -119,6 +102,30 @@ def test(model, dataloader, device):
 
     accuracy = correct / total if total > 0 else 0
     return accuracy
+
+# FedProto 聚合函数
+def fedproto_aggregation(global_model, client_models, global_protos, local_protos_list):
+    # 平均聚合模型参数
+    global_dict = global_model.state_dict()
+    for k in global_dict.keys():
+        global_dict[k] = torch.stack([client_models[i].state_dict()[k].float() for i in range(len(client_models))], 0).mean(0)
+    global_model.load_state_dict(global_dict)
+
+    # 聚合客户端的类原型
+    new_global_protos = {}
+    for local_protos in local_protos_list:
+        for label, proto in local_protos.items():
+            if label not in new_global_protos:
+                new_global_protos[label] = [proto]
+            else:
+                new_global_protos[label].append(proto)
+
+    # 计算全局原型的平均
+    for label, proto_list in new_global_protos.items():
+        new_global_protos[label] = torch.stack(proto_list, 0).mean(0)
+
+    global_protos.update(new_global_protos)
+    return global_model, global_protos
 
 # 解析 dataset_report.txt 文件，确定每个数据集对应的客户端
 def parse_dataset_report(report_file):
@@ -171,13 +178,14 @@ def load_test_data(dataset_name, base_dir):
     else:
         raise FileNotFoundError(f"测试集 {dataset_name} 的特征或标签文件不存在")
 
-# 联邦训练和评估 (FedProto机制)
-def federated_train_and_evaluate_fedproto(all_client_features, test_loaders, communication_rounds, local_epochs, batch_size=16, learning_rate=0.01):
+# 联邦训练和评估函数 (FedProto)
+def federated_train_and_evaluate_fedproto(all_client_features, test_loaders, communication_rounds, local_epochs, batch_size=16, learning_rate=0.01, lam=2):
     global_model = MyNet(num_classes=10).to(device)
     client_models = [MyNet(num_classes=10).to(device) for _ in range(len(all_client_features))]
-    global_prototypes = initialize_prototypes(num_classes=10, feature_dim=512)
-
+    
     criterion = nn.CrossEntropyLoss()
+    global_protos = {}
+    local_protos_list = [{} for _ in range(len(all_client_features))]
 
     test_accuracies_mnist = []
     test_accuracies_usps = []
@@ -185,16 +193,15 @@ def federated_train_and_evaluate_fedproto(all_client_features, test_loaders, com
     test_accuracies_syn = []
     avg_accuracies = []
 
-    best_avg_accuracy = 0.0  # 记录最高的平均精度
-    best_model_state = None  # 保存精度最高时的模型状态
+    best_avg_accuracy = 0.0
+    best_model_state = None
 
-    report_path = './results/FedProto_report.txt'
+    report_path = './results/FedProto_original_report.txt'
     os.makedirs(os.path.dirname(report_path), exist_ok=True)
 
     with open(report_path, 'w') as f:
         for round in range(communication_rounds):
             # 客户端训练
-            client_prototypes = []
             for client_idx, client_data in enumerate(all_client_features):
                 original_features, original_labels = client_data
                 client_model = client_models[client_idx]
@@ -203,14 +210,11 @@ def federated_train_and_evaluate_fedproto(all_client_features, test_loaders, com
                 for epoch in range(local_epochs):
                     train_dataset = MyDataset(original_features, original_labels)
                     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-                    train_loss, train_accuracy = train_fedproto(client_model, global_model, global_prototypes, train_dataloader, criterion, optimizer, device)
+                    train_loss, train_accuracy = train_fedproto(client_model, train_dataloader, criterion, optimizer, device, global_protos, local_protos_list[client_idx], lam=lam)
 
-                # 更新客户端原型
-                client_prototypes.append(update_prototypes(client_model, train_dataloader, global_prototypes))
-
-            # FedProto 原型聚合
-            global_prototypes = fedproto_aggregation(global_prototypes, client_prototypes, len(client_models))
-
+            # 聚合
+            global_model, global_protos = fedproto_aggregation(global_model, client_models, global_protos, local_protos_list)
+            
             # 在四个测试集上分别评估全局模型
             mnist_features, mnist_labels = test_loaders['mnist']
             usps_features, usps_labels = test_loaders['usps']
@@ -238,6 +242,7 @@ def federated_train_and_evaluate_fedproto(all_client_features, test_loaders, com
                 best_avg_accuracy = avg_accuracy
                 best_model_state = global_model.state_dict()  # 保存最佳模型的状态
 
+    # 返回最佳模型状态
     return best_model_state, test_accuracies_mnist, test_accuracies_usps, test_accuracies_svhn, test_accuracies_syn, avg_accuracies
 
 # 主函数
@@ -263,14 +268,14 @@ def main():
         'syn': load_test_data('syn', test_base_dir)
     }
 
-    # 联邦训练和评估 (FedProto机制)
+    # 联邦训练和评估
     communication_rounds = 50
     local_epochs = 10
     best_model_state, test_accuracies_mnist, test_accuracies_usps, test_accuracies_svhn, test_accuracies_syn, avg_accuracies = federated_train_and_evaluate_fedproto(
-        all_client_features, test_loaders, communication_rounds, local_epochs)
+        all_client_features, test_loaders, communication_rounds, local_epochs, lam=2)
 
     # 保存精度最高的模型
-    best_model_path = './model/FedProto_original_global_model.pth'
+    best_model_path = './model/FedProto_original_best_model.pth'
     torch.save(best_model_state, best_model_path)
 
     # 绘制测试集精度随通信轮次变化的折线图
@@ -283,7 +288,7 @@ def main():
     plt.xlabel('Communication Rounds')
     plt.ylabel('Test Accuracy (%)')
     plt.ylim(0, 100)
-    plt.title('Test Accuracy vs Communication Rounds (FedProto)')
+    plt.title('Test Accuracy vs Communication Rounds')
     plt.legend()
     plt.savefig('./results/FedProto_original_test_accuracy_plot.png')
     plt.show()
