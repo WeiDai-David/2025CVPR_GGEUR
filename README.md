@@ -369,11 +369,31 @@ python SCAFFOLD联邦原始特征.py
 python SCAFFOLD联邦补全特征.py
 ```
 
+PACS和office_caltech_10是小样本数据集和少分类任务
+少分类任务-分类难度低
+类间差异大-有利于区分
+小样本数据集中划分训练集测试集-训练集和测试集相似-隐式提高精度
+同域类划分相对平衡(因为是按比例随机划分，这是跨域划分的通病)
+
+随着自监督学习的发展，面向以clip、dino为代表的Backbond时，PACS和office_caltech_10这类跨域数据集的挑战被大大的削弱，因此我们迫切的需要一种更符合现实场景且更具有挑战的数据集，因此我们提出了Office-Home-LDS，它在Office-Home数据集(65分类)的基础上融合了跨域和数据异质，显然，这更符合真实世界。
+
 PACS:
+1.数据集介绍：
+PACS 数据集包含四个不同的域（domains）的数据，包含七个类别:Dog、Elephant、Giraffe、Guitar、Horse、House、Person
+(1): P（Photo）: 真实照片
+(2): A（Art Painting）: 艺术绘画
+(3): C（Cartoon）: 卡通
+(4): S（Sketch）: 素描
 
 
 office_caltech_10:
-
+1.数据集介绍：
+office_caltech_10 数据集包含四个不同的域（domains）的数据，包含十个类别:Backpack、Calculator、
+Headphones、Keyboard、Laptop、Monitor、Mouse、Mug、Projector、Bike
+(1): Amazon (A): 来自 Amazon 的商品图片
+(2): Webcam (W): 通过网络摄像头拍摄的图像
+(3): DSLR (D): 由数码单反相机拍摄的图像
+(4): Caltech-256 (C): 从 Caltech-256 数据集中选取的图像
 
 
 Office-Home-LDS:
