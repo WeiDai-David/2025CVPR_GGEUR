@@ -223,4 +223,4 @@ def main(alpha):
     save_class_allocation_combined(domains, alpha)
 
 if __name__ == '__main__':
-    main(alpha=0.1)
+    main(alpha=0.5)

@@ -28,6 +28,11 @@ def process_prototypes(dataset_name, client_id, base_dir, output_dir, num_classe
         if os.path.exists(feature_file) and os.path.exists(label_file):
             features = np.load(feature_file)
 
+            # 检查特征是否为空
+            if features.size == 0:
+                print(f"客户端 {client_id} 类别 {class_label} 特征为空，跳过...")
+                continue
+
             # 计算原型
             prototype = compute_prototype(features)
 

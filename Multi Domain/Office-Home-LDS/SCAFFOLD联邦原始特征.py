@@ -107,18 +107,25 @@ def load_training_data(dataset_name, client_id, base_dir):
         label_file = os.path.join(base_dir, dataset_name, f'client_{client_id}_class_{class_idx}_labels.npy')
 
         if os.path.exists(feature_file) and os.path.exists(label_file):
-            print(f"加载 {dataset_name} 客户端 {client_id} 类别 {class_idx} 的特征和标签文件")
             features = np.load(feature_file)
             labels = np.load(label_file)
-            all_features.append(features)
-            all_labels.append(labels)
+            
+            # 检查是否为空
+            if features.size > 0 and labels.size > 0:
+                all_features.append(features)
+                all_labels.append(labels)
+            else:
+                print(f"警告：客户端 {client_id} 类别 {class_idx} 的特征或标签为空，跳过该类")
         else:
-            raise FileNotFoundError(f"客户端 {client_id} 类别 {class_idx} 的特征或标签文件不存在")
+            print(f"客户端 {client_id} 类别 {class_idx} 的特征或标签文件不存在，跳过该类")
 
-    all_features = np.vstack(all_features)
-    all_labels = np.concatenate(all_labels)
-    
-    return torch.tensor(all_features, dtype=torch.float32), torch.tensor(all_labels, dtype=torch.long)
+    if all_features and all_labels:
+        all_features = np.vstack(all_features)
+        all_labels = np.concatenate(all_labels)
+        return torch.tensor(all_features, dtype=torch.float32), torch.tensor(all_labels, dtype=torch.long)
+    else:
+        print(f"客户端 {client_id} 没有有效数据，跳过")
+        return None, None  # 返回 None 表示没有有效数据
 
 # 加载测试集特征
 def load_test_data(dataset_name, base_dir):
@@ -154,7 +161,7 @@ def federated_train_and_evaluate_scaffold(all_client_features, test_loaders, com
     best_avg_accuracy = 0.0  # 记录最高的平均精度
     best_model_state = None  # 保存精度最高时的模型状态
 
-    report_path = './results/SCAFFOLD_office_home_report.txt'
+    report_path = './results/SCAFFOLD_original_report.txt'
     os.makedirs(os.path.dirname(report_path), exist_ok=True)
 
     with open(report_path, 'w') as f:
@@ -162,6 +169,10 @@ def federated_train_and_evaluate_scaffold(all_client_features, test_loaders, com
             # 客户端训练
             for client_idx, client_data in enumerate(all_client_features):
                 original_features, original_labels = client_data
+                if original_features is None or original_labels is None:
+                    print(f"跳过客户端 {client_idx} 的训练，因为数据无效")
+                    continue  # 跳过没有有效数据的客户端
+
                 client_model = client_models[client_idx]
                 optimizer = optim.Adam(client_model.parameters(), lr=learning_rate)
 
@@ -224,7 +235,8 @@ def main():
     for dataset_name, clients in client_range.items():
         for client_id in clients:
             features, labels = load_training_data(dataset_name, client_id, train_base_dir)
-            all_client_features.append((features, labels))
+            if features is not None and labels is not None:  # 确保非空
+                all_client_features.append((features, labels))
 
     # 加载测试集特征和标签
     test_base_dir = './clip_office_home_test_features'
@@ -242,7 +254,7 @@ def main():
         all_client_features, test_loaders, communication_rounds, local_epochs)
 
     # 保存精度最高的模型
-    best_model_path = './model/SCAFFOLD_office_home_global_model.pth'
+    best_model_path = './model/SCAFFOLD_original_model.pth'
     torch.save(best_model_state, best_model_path)
 
     # 绘制测试集精度随通信轮次变化的折线图
@@ -257,7 +269,7 @@ def main():
     plt.ylim(0, 100)
     plt.title('Test Accuracy vs Communication Rounds (SCAFFOLD)')
     plt.legend()
-    plt.savefig('./results/SCAFFOLD_office_home_test_accuracy_plot.png')
+    plt.savefig('./results/SCAFFOLD_original_test_accuracy_plot.png')
     plt.show()
 
 if __name__ == "__main__":

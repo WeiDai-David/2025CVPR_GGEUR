@@ -93,23 +93,31 @@ def federated_averaging(global_model, client_models):
 # 加载每个客户端的原始特征和标签文件
 def load_client_features(client_idx, dataset_name, base_dir):
     features, labels = [], []
-    for class_idx in range(65):  # 修改类别范围为 0-64
+    for class_idx in range(65):  # 修改为65个类别
         original_features_path = os.path.join(base_dir, dataset_name, f'client_{client_idx}_class_{class_idx}_original_features.npy')
         original_labels_path = os.path.join(base_dir, dataset_name, f'client_{client_idx}_class_{class_idx}_labels.npy')
         
         if os.path.exists(original_features_path) and os.path.exists(original_labels_path):
             class_features = np.load(original_features_path)
             class_labels = np.load(original_labels_path)
-            features.append(class_features)
-            labels.append(class_labels)
+            
+            # 检查特征和标签是否为空
+            if class_features.size > 0 and class_labels.size > 0:
+                features.append(class_features)
+                labels.append(class_labels)
+            else:
+                print(f"警告：客户端 {client_idx} 类别 {class_idx} 的特征或标签为空，跳过该类")
         else:
-            print(f"客户端 {client_idx} 类别 {class_idx} 的特征或标签文件不存在")
+            print(f"客户端 {client_idx} 类别 {class_idx} 的特征或标签文件不存在，跳过该类")
     
     if features and labels:
+        # 只有当 features 和 labels 非空时才拼接
         features = np.vstack(features)
         labels = np.concatenate(labels)
         return features, labels
     else:
+        # 如果没有有效的特征和标签，则返回 None
+        print(f"客户端 {client_idx} 没有有效数据，跳过")
         return None, None
 
 # 加载测试集特征和标签
@@ -118,6 +126,7 @@ def load_test_features_labels(dataset_name, base_dir='./clip_office_home_test_fe
     test_labels_path = os.path.join(base_dir, dataset_name, f'{dataset_name}_test_labels.npy')
     
     if os.path.exists(test_features_path) and os.path.exists(test_labels_path):
+        print(f"加载 {dataset_name} 测试集的特征和标签文件")
         test_features = np.load(test_features_path)
         test_labels = np.load(test_labels_path)
         return torch.tensor(test_features, dtype=torch.float32), torch.tensor(test_labels, dtype=torch.long)
@@ -131,7 +140,7 @@ def federated_train_and_evaluate_fedprox(all_client_features, test_sets, communi
 
     criterion = nn.CrossEntropyLoss()
 
-    report_path = './results/FedProx_report.txt'
+    report_path = './results/FedProx_original_report.txt'
     os.makedirs(os.path.dirname(report_path), exist_ok=True)
 
     all_accuracies = {name: [] for name in list(test_sets.keys()) + ['average']}
@@ -207,7 +216,7 @@ def plot_accuracies(accuracies, communication_rounds):
     plt.title('Test Accuracy across Communication Rounds')
     plt.legend()
     plt.grid(True)
-    plt.savefig('./results/FedProx_test_accuracy_plot.png')
+    plt.savefig('./results/FedProx_original_test_accuracy_plot.png')
     plt.show()
 
 # 主函数
@@ -240,7 +249,7 @@ def main():
     best_model_state, all_accuracies = federated_train_and_evaluate_fedprox(all_client_features, test_sets, communication_rounds, local_epochs, mu=mu)
 
     # 保存精度最高的模型
-    best_model_path = './model/FedProx_best_model.pth'
+    best_model_path = './model/FedProx_original_best_model.pth'
     torch.save(best_model_state, best_model_path)
 
     # 绘制精度变化图

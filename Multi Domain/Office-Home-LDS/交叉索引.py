@@ -74,7 +74,7 @@ def main():
         assigned_clients = client_range[dataset_name]
         
         for client_id in assigned_clients:
-            client_file = f'client_{client_id}_indices.npy'
+            client_file = f'client_client_indices.npy'
             client_indices_path = os.path.join(client_indices_dir, client_file)
 
             # 检查客户端索引文件是否存在

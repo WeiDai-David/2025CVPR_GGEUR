@@ -6,7 +6,6 @@
 关键词：联邦学习、数据异质、域泛化、感知流形
 
 ## 工程解析
-当前为线性运行逻辑，项目重构的工作还在进行，未来我们将推出重构版本
 
 环境 
 ```bash
@@ -335,7 +334,7 @@ report_file 字符串 域和客户端的映射文件
 ```
 执行脚本:
 ```bash
-python 聚合协方差矩阵4x10=4.py
+python 聚合协方差矩阵4x10=10.py
 ```
 运行结果:
 ```bash
@@ -345,7 +344,7 @@ cov_matrix_output/class_{0~9}_cov_matrix.npy
 现在我们已经得到了分布的几何方向和多个域对应的类原型，在客户端进行数据增强，客户端本域，进行单域数据增强策略，非本域，则以类原型为中心进行几何方向的增强，这样即使在客户端视角，也能学习到跨域的特征，从而有效的缓解域偏移带来的偏差
 执行脚本:
 ```bash
-扩充-放大聚合协方差矩阵-类原型-类中心.py
+python 扩充-放大聚合协方差矩阵-类原型-类中心.py
 ```
 运行结果:
 ```bash
@@ -396,11 +395,11 @@ python data_distribution_digits.py
 ```
 运行结果:
 ```bash
-output_indices/{域名称}/train_train_indices.npy 该域数据集划分的训练集索引
-output_indices/{域名称}/test_test_indices.npy 域数据集划分的测试集索引
-output_indices/{域名称}/client_{域对应的客户端编号}_indices.npy  该域内客户端划分的索引
-output_indices/{域名称}/class_indices.npy  该域内各类的索引集合
-output_indices/client_combined_class_distribution.txt  各域分配给对应客户端各类的数据分布
+./output_indices/{域名称}/train_train_indices.npy 该域数据集划分的训练集索引
+./output_indices/{域名称}/test_test_indices.npy 该域数据集划分的测试集索引
+./output_indices/{域名称}/client_{域对应的客户端编号}_indices.npy  该域内客户端划分的索引
+./output_indices/{域名称}/class_indices.npy  该域内各类的索引集合
+./output_indices/client_combined_class_distribution.txt  各域分配给对应客户端各类的数据分布
 ```
 3.交叉索引
 我们已经得到某域对应的客户端在该域划分的数据索引,以及该域的类别索引,通过交叉索引,我们可以得到该域对应客户端的各类的索引文件
@@ -514,16 +513,109 @@ python SCAFFOLD联邦原始特征.py
 
 Office-Home-LDS:
 1.数据集介绍：
-Digits 数据集包含四个不同的域（domains）的数据，类别为数字0-9这十种类别
-(1): MNIST（Mixed National Institute of Standards and Technology）：不同人手写的数字（0-9）
-(2): SVHN（Street View House Numbers）：谷歌街景的门牌号裁剪成数字（0-9）
-(3): USPS（United States Postal Service）：美国邮政编号裁剪的数字（0-9）
-(4): SynthDigits（Synthetic Digits）：合成方法生成的彩色（RGB）的数字（0-9）
+Office-Home-LDS 数据集包含四个不同的域（domains）的数据，有65个类别
+(1): Art： 手绘、素描或油画风格的图像
+(2): Clipart： 来自网络的卡通和剪贴画图像
+(3): Product：	产品图片或商品展示图
+(4): Real World： 现实场景中拍摄的图像
 2.数据集划分
-我们遵循联邦跨域以往的工作设置：一个客户端划分一个域，同时各客户端按照比例进行随机划分
+我们遵循联邦跨域以往的工作设置：一个客户端划分一个域，同时各客户端按照狄利克雷矩阵中的比例从训练集中随机划分,对于没有划分训练集和测试集的数据集，遵循以往工作的比例进行划分
 执行脚本:
 ```bash
 python data_distribution_Office_Home_LDS.py
+```
+运行结果:
+```bash
+./output_indices/{域名称}/train_train_indices.npy 该域数据集划分的训练集索引
+./output_indices/{域名称}/test_test_indices.npy 该域数据集划分的测试集索引
+./output_indices/{域名称}/client_{域对应的客户端编号}_indices.npy 该域内客户端划分的索引
+./output_indices/{域名称}/class_indices.npy 该域内各类的索引集合
+./output_indices/client_combined_class_distribution.txt 各域分配给对应客户端各类的数据分布
+```
+3.交叉索引
+我们已经得到某域对应的客户端在该域划分的数据索引,以及该域的类别索引,通过交叉索引,我们可以得到该域对应客户端的各类的索引文件
+执行脚本:
+```bash
+python 交叉索引.py
+```
+运行结果:
+```bash
+output_client_class_indices/{域名称}/client_{域对应的客户端编号}_class_{0~64}_indices.npy
+```
+4.训练集特征提取
+我们已经得到了四个域对应的四个客户端下,,各个类的索引文件,使用CLIP作为Backbond,我们对索引文件逐个进行特征提取得到对应的特征文件和标签文件
+执行脚本:
+```bash
+python 训练集特征.py
+```
+运行结果:
+```bash
+clip_office_home_train_features/{域名称}/client_{域对应的客户端编号}_class_{0~64}_original_features.npy
+clip_office_home_train_features/{域名称}/client_{域对应的客户端编号}_class_{0~64}_labels.npy
+```
+5.测试集特征提取
+执行脚本:
+```bash
+python 测试集特征.py
+```
+运行结果:
+```bash
+clip_test_features/{域名称}/{域名称}_test_features.npy
+clip_test_features/{域名称}/{域名称}_test_labels.npy
+```
+6.提取原型
+通过前面得到的客户端类别索引文件，可以提取对应的类原型
+执行脚本:
+```bash
+python 提取原型.py
+```
+运行结果:
+```bash
+./office_home_prototypes/{域名称}/client_{域对应的客户端编号}_class_{0~64}_prototype.npy
+```
+7.几何方向
+在流形空间的视角，跨域的本质是类对应的流形分布发生横向的偏移，几何方向并没有变化，因此我们可以利用多域的合并特征来表示几何形状
+```bash
+report_file 字符串 域和客户端的映射文件
+```
+执行脚本:
+```bash
+python 聚合协方差矩阵4x65=65.py
+```
+运行结果:
+```bash
+cov_matrix_output/class_{0~64}_cov_matrix.npy
+```
+8.几何引导的数据增强
+现在我们已经得到了分布的几何方向和多个域对应的类原型，在客户端进行数据增强，客户端本域，进行单域数据增强策略，非本域，则以类原型为中心进行几何方向的增强，这样即使在客户端视角，也能学习到跨域的特征，从而有效的缓解域偏移带来的偏差
+执行脚本:
+```bash
+python 扩充-放大聚合协方差矩阵-类原型-类中心-封顶.py.py
+```
+运行结果:
+```bash
+argumented_clip_features/{域名称}/client_{域对应的客户端编号}_class_{0~64}/final_embeddings_filled.npy
+argumented_clip_features/{域名称}/client_{域对应的客户端编号}_class_{0~64}/labels_filled.npy
+```
+9.不同联邦架构训练
+执行脚本:
+```bash
+python FedAvg联邦原始特征.py 
+python FedAvg联邦补全特征.py 
+python FedNTD联邦原始特征.py
+python FedNTD联邦补全特征.py
+python FedOpt联邦原始特征.py
+python FedOpt联邦补全特征.py
+python FedProx联邦原始特征.py
+python FedProx联邦补全特征.py
+python MOON联邦原始特征.py
+python MOON联邦补全特征.py
+python FedDyn联邦原始特征.py
+python FedDyn联邦补全特征.py
+python FedProto联邦原始特征.py
+python FedProto联邦补全特征.py
+python SCAFFOLD联邦原始特征.py
+python SCAFFOLD联邦补全特征.py
 ```
 
 

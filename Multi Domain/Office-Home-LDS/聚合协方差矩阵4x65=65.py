@@ -1,6 +1,5 @@
 import numpy as np
 import os
-import argparse
 
 # 定义特征提取函数
 def calculate_mean(Z):
@@ -28,11 +27,22 @@ def process_class_aggregated_covariance(class_idx, all_client_feature_paths):
     for feature_file in all_client_feature_paths:
         print(f"Loading features from: {feature_file}")
         Z = np.load(feature_file)
+
+        # 如果样本数量为0，跳过该客户端
+        if Z.shape[0] == 0:
+            print(f"Skipping {feature_file} due to 0 samples.")
+            continue
+        
         mean_Z = calculate_mean(Z)
         cov_matrix = calculate_covariance(Z, mean_Z)
         sample_counts.append(Z.shape[0])
         mean_matrices.append(mean_Z)
         covariance_matrices.append(cov_matrix)
+
+    # 如果所有客户端都没有样本，返回空的协方差矩阵
+    if len(sample_counts) == 0:
+        print(f"No valid samples for class {class_idx}. Returning an empty covariance matrix.")
+        return np.zeros((512, 512))
 
     # 计算聚合均值和协方差矩阵
     total_samples = np.sum(sample_counts)

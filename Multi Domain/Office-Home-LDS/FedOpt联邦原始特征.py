@@ -86,25 +86,33 @@ def fedopt_aggregation(global_model, client_models, global_optimizer):
 
 # 加载每个客户端的原始特征和标签文件
 def load_client_features(client_idx, dataset_name, base_dir):
-    features, labels = [], []
+    all_features = []
+    all_labels = []
+
     for class_idx in range(65):  # 修改为65个类别
-        original_features_path = os.path.join(base_dir, dataset_name, f'client_{client_idx}_class_{class_idx}_original_features.npy')
-        original_labels_path = os.path.join(base_dir, dataset_name, f'client_{client_idx}_class_{class_idx}_labels.npy')
-        
-        if os.path.exists(original_features_path) and os.path.exists(original_labels_path):
-            class_features = np.load(original_features_path)
-            class_labels = np.load(original_labels_path)
-            features.append(class_features)
-            labels.append(class_labels)
+        feature_file = os.path.join(base_dir, dataset_name, f'client_{client_idx}_class_{class_idx}_original_features.npy')
+        label_file = os.path.join(base_dir, dataset_name, f'client_{client_idx}_class_{class_idx}_labels.npy')
+
+        if os.path.exists(feature_file) and os.path.exists(label_file):
+            features = np.load(feature_file)
+            labels = np.load(label_file)
+            
+            # 检查是否为空
+            if features.size > 0 and labels.size > 0:
+                all_features.append(features)
+                all_labels.append(labels)
+            else:
+                print(f"警告：客户端 {client_idx} 类别 {class_idx} 的特征或标签为空，跳过该类")
         else:
-            print(f"客户端 {client_idx} 类别 {class_idx} 的特征或标签文件不存在")
-    
-    if features and labels:
-        features = np.vstack(features)
-        labels = np.concatenate(labels)
-        return features, labels
+            print(f"客户端 {client_idx} 类别 {class_idx} 的特征或标签文件不存在，跳过该类")
+
+    if all_features and all_labels:
+        all_features = np.vstack(all_features)
+        all_labels = np.concatenate(all_labels)
+        return torch.tensor(all_features, dtype=torch.float32), torch.tensor(all_labels, dtype=torch.long)
     else:
-        return None, None
+        print(f"客户端 {client_idx} 没有有效数据，跳过")
+        return None, None  # 返回 None 表示没有有效数据
 
 # 加载测试集特征和标签
 def load_test_features_labels(dataset_name, base_dir='./clip_office_home_test_features'):  # 修改路径
@@ -128,7 +136,7 @@ def federated_train_and_evaluate_fedopt(all_client_features, test_sets, communic
     # 定义全局优化器 (用于FedOpt的全局更新)
     global_optimizer = optim.SGD(global_model.parameters(), lr=global_learning_rate)
 
-    report_path = './results/FedOpt_report.txt'
+    report_path = './results/FedOpt_original_report.txt'
     os.makedirs(os.path.dirname(report_path), exist_ok=True)
 
     all_accuracies = {name: [] for name in list(test_sets.keys()) + ['average']}
@@ -204,7 +212,7 @@ def plot_accuracies(accuracies, communication_rounds):
     plt.title('Test Accuracy across Communication Rounds')
     plt.legend()
     plt.grid(True)
-    plt.savefig('./results/FedOpt_test_accuracy_plot.png')
+    plt.savefig('./results/FedOpt_original_test_accuracy_plot.png')
     plt.show()
 
 # 主函数
@@ -237,7 +245,7 @@ def main():
     best_model_state, all_accuracies = federated_train_and_evaluate_fedopt(all_client_features, test_sets, communication_rounds, local_epochs, learning_rate=0.001, global_learning_rate=global_learning_rate)
 
     # 保存精度最高的模型
-    best_model_path = './model/FedOpt_best_model.pth'
+    best_model_path = './model/FedOpt_original_best_model.pth'
     torch.save(best_model_state, best_model_path)
 
     # 绘制精度变化图
