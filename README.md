@@ -5,6 +5,8 @@
 
 关键词：联邦学习、数据异质、域泛化、感知流形
 
+
+
 ## 工程解析
 
 环境 
@@ -617,5 +619,45 @@ python FedProto联邦补全特征.py
 python SCAFFOLD联邦原始特征.py
 python SCAFFOLD联邦补全特征.py
 ```
+## Learning Trajectory (Updating...)
+
+When I completed this project, I was a third-year undergraduate student. 🌿 I will share my learning trajectory and how to efficiently and comprehensively develop expertise in a specific field. 🌊 I believe that the most effective approach is to start by identifying high-quality review articles from top-tier journals. 📚 After forming a comprehensive understanding of the field, I recommend selecting detailed papers from the references cited in these outstanding reviews, focusing on those that align with the direction of our current work for in-depth study. 🔍 This process resembles a leaf with its veins hollowed out — our process of understanding is akin to a flood flowing through the leaf, with the central vein serving as the core from which knowledge selectively branches out in all directions. 🚀
+
++ **2023Tpami**  "Deep Long-Tailed Learning: A Survey"[Paper](https://arxiv.org/pdf/2304.00685)——Review on Long-Tailed Learning 
+
++ **2024Tpami** "Vision-Language Models for Vision Tasks: A Survey" [Paper](https://arxiv.org/pdf/2304.00685) & [Github](https://github.com/jingyi0000/VLM_survey)——Review on Vision-Language Large Models
+
++ **2024Tpami**  "Federated Learning for Generalization, Robustness, Fairness: A Survey and Benchmark" [Paper](https://arxiv.org/pdf/2311.06750) & [Github](https://github.com/WenkeHuang/MarsFL)——Review on Federated Learning
+
++ **2021CVPR**  "Model-Contrastive Federated Learning" [Paper](https://arxiv.org/pdf/2103.16257) & [Github](https://github.com/QinbinLi/MOON)——MOON Model for Contrastive Federated Learning (Alignment of Local and Global Model Representations)
+
++ **2022AAAI** "FedProto: Federated Prototype Learning across Heterogeneous Clients"[Paper](https://arxiv.org/pdf/2105.00243)——FedProto Federated Prototype Learning (Alignment of Local and Global Prototype Representations)
+
++ **2023FGCS** "FedProc: Prototypical contrastive federated learning on non-IID data" [Paper](https://arxiv.org/pdf/2109.12273)——FedProc Prototype Contrastive Federated Learning (Alignment of Local and Global Prototype Representations)
+  
++ **2020ICML** "SCAFFOLD:Stochastic Controlled Averaging for Federated Learning"[Paper](https://arxiv.org/pdf/1910.06378)——SCAFFOLD Stochastic Controlled Federated Learning (Alignment of Local and Global Optimization Directions)
+  
++ **2021ICLR** " FEDERATED LEARNING BASED ON DYNAMIC REGULARIZATION"[Paper](https://arxiv.org/pdf/2111.04263)——FedDyn Dynamic Regularization Federated Learning (Alignment of Local and Global Losses)
+
++ **2022NeurIPS** "Preservation of the Global Knowledge by Not-True Distillation in Federated Learning" [Paper](https://arxiv.org/pdf/2106.03097 )——FedNTD Not-True Distillation Federated Learning (Alignment of Unseen Local Losses with Global Losses)
+
++  **2021ICLR** "ADAPTIVE FEDERATED OPTIMIZATION"[Paper](https://arxiv.org/pdf/2003.00295)——FedOpt Adaptive Federated Learning (Server-Side Aggregation Optimization)
+
++ **2024CVPR**  "Fair Federated Learning under Domain Skew with Local Consistency and Domain Diversity"[Paper](https://arxiv.org/pdf/2405.16585) & [Github](https://github.com/yuhangchen0/FedHEAL)——FedHEAL Cross-Domain Federated Learning (Alignment of Local and Global Model Representations)
+
++ **2023WACV**  "Federated Domain Generalization for Image Recognition via Cross-Client Style Transfer"[Paper](https://arxiv.org/pdf/2210.00912) & [Github](https://chenjunming.ml/proj/CCST)——CCST Cross-Domain Federated Learning (Alignment of Local and Global Optimization Directions)
+
++ **2023TMC**  "FedFA: Federated Learning with Feature Anchors to Align Features and Classifiers for Heterogeneous Data"[Paper](https://arxiv.org/pdf/2211.09299)——FedFA Feature Anchor Federated Learning (Alignment of Features and Classifiers)
+
++ **2024AAAI** "CLIP-Guided Federated Learning on Heterogeneous and Long-Tailed Data"[Paper](https://arxiv.org/pdf/2312.08648)——CLIP as Backbond For FL
+
++ **2023CVPR** "Rethinking Federated Learning with Domain Shift: A Prototype View"[Paper](https://openaccess.thecvf.com/content/CVPR2023/papers/Huang_Rethinking_Federated_Learning_With_Domain_Shift_A_Prototype_View_CVPR_2023_paper.pdf) & [Github](https://github.com/WenkeHuang/RethinkFL/tree/main)——Cross-Domain Prototype Loss Alignment
+
++ **2023ICLR** "FEDFA: FEDERATED FEATURE AUGMENTATION" [Paper](https://arxiv.org/pdf/2301.12995) & [Github](https://github.com/tfzhou/FedFA)——Class Prototype Gaussian Enhancement
+
++ **2021ICLR** "FEDMIX: APPROXIMATION OF MIXUP UNDER MEAN AUGMENTED FEDERATED LEARNING" [Paper](https://arxiv.org/pdf/2107.00233)——Mixup For FL
+
++ **2021PMLR** "Data-Free Knowledge Distillation for Heterogeneous Federated Learning"  [Paper](https://arxiv.org/pdf/2105.10056)——Data-Free Knowledge Distillation For FL
++ **2017ICML** "Communication-Efficient Learning of Deep Networks from Decentralized Data" [Paper](https://arxiv.org/pdf/1602.05629)——FedAvg(Average aggregation)
 
 
