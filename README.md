@@ -6,6 +6,13 @@
 关键词：联邦学习、数据异质、域泛化、感知流形 -->
 
 # 2025CVPR_GGEUR
+**项目整理中 待完成的工作 7/3/2025**：
+(1):英文版本
+(2):各个子工程脚本名的逻辑重构
+(3):子工程内脚本的逻辑关系图 子工程间的逻辑关系图
+(4):站在模型视野(流形空间)的角度将我们的思想以图的方式剖析
+(5):更优美更逻辑的md表述
+
 **Abstract:** Data heterogeneity in federated learning, characterized by a significant misalignment between local and global distributions, leads to divergent local optimization directions and hinders global model training. Existing studies mainly focus on optimizing local updates or global aggregation, but these indirect approaches demonstrate instability when handling highly heterogeneous data distributions, especially in scenarios where label skew and domain skew coexist. To address this, we propose a geometry-guided data generation method that centers on simulating the global embedding distribution locally. We first introduce the concept of the geometric shape of an embedding distribution and then address the challenge of obtaining global geometric shapes under privacy constraints. Subsequently, we propose GGEUR, which leverages global geometric shapes to guide the generation of new samples, enabling a closer approximation to the ideal global distribution. In singledomain scenarios, we augment samples based on global geometric shapes to enhance model generalization; in multidomain scenarios, we further employ class prototypes to simulate the global distribution across domains. Extensive experimental results demonstrate that our method significantly enhances the performance of existing approaches in handling highly heterogeneous data, including scenarios with label skew, domain skew, and their coexistence. Code published at: https://github.com/WeiDaiDavid/2025CVPR_GGEUR
 
 **key word:** Federated Learning, Data Heterogeneity, Domain Generalization, Perceptual Manifold
