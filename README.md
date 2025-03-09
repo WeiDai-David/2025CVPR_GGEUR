@@ -47,7 +47,7 @@ The CIFAR dataset is sorted by subsets of the same class, so the indexing proces
 ```
 Optional parameters:
 ```bash
-num_clients 整数 客户端数量
+num_clients integer Number of clients
 alpha 浮点数 狄利克雷系数
 min_require_size 整数 最小分配数
 ```
