@@ -1,33 +1,51 @@
-# 2025CVPR_GGEUR
+<!-- # 2025CVPR_GGEUR
 联邦学习中几何引导的本地全局分布对齐
 
 摘要：联邦学习中的数据异质性，其特征在于局部和全局分布之间的显著不一致，导致局部优化方向不同，并阻碍全局模型训练。现有的研究主要集中在优化本地更新或全局聚合，但这些间接方法在处理高度异构的数据分布时表现出不稳定性，特别是在标签偏斜和域偏斜共存的情况下。为了解决这个问题，我们提出了一种几何引导的数据增强方法，该方法侧重于在局部模拟全局嵌入分布。我们首先引入了嵌入分布几何形状的概念，并在隐私约束下解决了获取全局几何形状的挑战。随后，我们提出了GGEUR，它利用全局几何形状来引导新样本的生成，从而实现对理想全局分布更好的近似。在单域的情况下，我们通过基于全局几何形状的样本增强来提高模型泛化能力；在多域的情况下，我们进一步采用类原型来模拟跨域的全局分布。大量的实验结果表明，我们的方法在处理高度异构的数据时显著提升了性能，尤其是在标签倾斜，域倾斜，和二者共存的情况下。
 
-关键词：联邦学习、数据异质、域泛化、感知流形
+关键词：联邦学习、数据异质、域泛化、感知流形 -->
 
+# 2025CVPR_GGEUR
+**Abstract:** Data heterogeneity in federated learning, characterized by a significant misalignment between local and global distributions, leads to divergent local optimization directions and hinders global model training. Existing studies mainly focus on optimizing local updates or global aggregation, but these indirect approaches demonstrate instability when handling highly heterogeneous data distributions, especially in scenarios where label skew and domain skew coexist. To address this, we propose a geometry-guided data generation method that centers on simulating the global embedding distribution locally. We first introduce the concept of the geometric shape of an embedding distribution and then address the challenge of obtaining global geometric shapes under privacy constraints. Subsequently, we propose GGEUR, which leverages global geometric shapes to guide the generation of new samples, enabling a closer approximation to the ideal global distribution. In singledomain scenarios, we augment samples based on global geometric shapes to enhance model generalization; in multidomain scenarios, we further employ class prototypes to simulate the global distribution across domains. Extensive experimental results demonstrate that our method significantly enhances the performance of existing approaches in handling highly heterogeneous data, including scenarios with label skew, domain skew, and their coexistence. Code published at: https://github.com/WeiDaiDavid/2025CVPR_GGEUR
 
+**key word:** Federated Learning, Data Heterogeneity, Domain Generalization, Perceptual Manifold
 
-## 工程解析
+## New Dataset Office-Home-LDS 
 
-环境 
+Dataset & constructor ： <a href="https://huggingface.co/datasets/WeiDai-David/Office-Home-LDS" target="_blank">Huggingface</a>
+
+The dataset is organized as follows:
+```text
+Office-Home-LDS/
+├── data/ 
+│   └── Office-Home.zip        # Original raw dataset (compressed)
+├── new_dataset/               # Processed datasets based on different settings
+│   ├── Office-Home-0.1.zip    # Split with Dirichlet α = 0.1 (compressed)
+│   ├── Office-Home-0.5.zip    # Split with Dirichlet α = 0.5 (compressed)
+│   └── Office-Home-0.05.zip   # Split with Dirichlet α = 0.05 (compressed)
+├── Dataset-Office-Home-LDS.py # Python script for processing and splitting Original raw dataset
+└── README.md                  # Project documentation
+```
+## Engineering 
+
+Environment：
 ```bash
 conda create -n GGEUR python=3.9
 conda activate GGEUR
 
 ```
-## Office-Home-LDS 
-Dataset & Dataset-Office-Home-LDS.py ： <a href="https://huggingface.co/datasets/WeiDai-David/Office-Home-LDS" target="_blank">Huggingface</a>
 
 
-## 单域情况 
 
-1.数据集划分
-CIFAR(10,100)数据集：
-数据集索引解析：
-```bash
-CIFAR数据集按照同类子集依次排列,因此构造索引过程直接按照类数量进行索引排列
+## Single Domain
+
+1.Dataset Partitioning
+CIFAR (10 & 100) dataset:
+Dataset index parsing:
+```text
+The CIFAR dataset is sorted by subsets of the same class, so the indexing process is directly arranged by the number of classes
 ```
-可选参数:
+Optional parameters:
 ```bash
 num_clients 整数 客户端数量
 alpha 浮点数 狄利克雷系数
@@ -37,6 +55,7 @@ min_require_size 整数 最小分配数
 ```bash
 python data_distribution_CIFAR-10.py
 python data_distribution_CIFAR-100.py
+python data_batch2index_images.py  检查划分
 ```
 运行结果:
 ```bash
@@ -99,10 +118,11 @@ min_require_size 整数 最小分配数
 ```
 执行脚本:
 ```bash
-python Reorganized_TinyImageNet_Val.py  重构验证集
-python TinyImageNet_Val.py  验证集索引转化
+python reorganized_TinyImageNet_val.py  重构验证集
+python TinyImageNet_val_index.py  验证集索引转化
 python data_distribution_TinyImageNet.py
-ps python TinyImageNet_Val_Index_tag_image_matching_test.py 检查验证集处理
+python TinyImageNet_val_index_tag_img_matching_test.py 检查验证集处理
+python TinyImageNet_val_features.py 提取验证集特征
 ```
 运行结果:
 ```bash
@@ -129,7 +149,7 @@ alpha 浮点数 狄利克雷系数
 ```
 执行脚本:
 ```bash
-python client_class_index.py
+python client_class_cross_index.py
 ```
 运行结果:
 ```bash
@@ -168,7 +188,7 @@ alpha 浮点数 狄利克雷系数
 ```
 执行脚本:
 ```bash
-python best_client_guidance_100.py
+python client-guided_set.py
 ```
 运行结果:
 ```bash
@@ -184,7 +204,7 @@ alpha 浮点数 狄利克雷系数
 ```
 执行脚本:
 ```bash
-python guide_clip_tensor.py
+python client-guided_clip_tensor.py
 ```
 4.3 全局分布的表示
 如果客户端集合只有一个客户端，则直接对特征矩阵进行协方差矩阵的计算，如果客户端集合由多个客户端组成，则分别对
@@ -196,7 +216,7 @@ alpha 浮点数 狄利克雷系数
 ```
 执行脚本:
 ```bash
-python clip_image_tensor2aggregate_covariance_matrix_100.py
+python clip_tensor2aggregate_covariance_matrix.py
 ```
 运行结果:
 ```bash
@@ -213,7 +233,7 @@ alpha 浮点数 狄利克雷系数
 ```
 执行脚本:
 ```bash
-python cov_matrix_generate_features.py_new_100.py
+python cov_matrix_generate_features.py
 ```
 运行结果:
 ```bash
@@ -234,7 +254,7 @@ num_epochs 整数 训练次数
 ```
 执行脚本:
 ```bash
-python MLP.py  CIFAR-10数据集训练
+python MLP_10.py  CIFAR-10数据集训练
 python MLP_100.py  CIFAR-100数据集训练
 python MLP_200.py  TinyImageNet数据集训练
 ```
@@ -252,9 +272,9 @@ learning_rate 浮点数 学习率
 ```
 执行脚本:
 ```bash
-python new-FL-MLP-10-images-all.py  CIFAR-10数据集训练
-python new-FL-MLP-100-images-all.py  CIFAR-100数据集训练
-python new-FL-MLP-200-images-all.py  TinyImageNet数据集训练
+python FL_MLP_10.py  CIFAR-10数据集训练
+python FL_MLP_100.py  CIFAR-100数据集训练
+python FL_MLP_200.py  TinyImageNet数据集训练
 ```
 
 ## 跨域情况 
@@ -629,27 +649,27 @@ When I completed this project, I was a third-year undergraduate student. 🌿 I 
 
 + **2024Tpami**  "Federated Learning for Generalization, Robustness, Fairness: A Survey and Benchmark" [Paper](https://arxiv.org/pdf/2311.06750) & [Github](https://github.com/WenkeHuang/MarsFL)——Review on Federated Learning
 
-+ **2021CVPR**  "Model-Contrastive Federated Learning" [Paper](https://arxiv.org/pdf/2103.16257) & [Github](https://github.com/QinbinLi/MOON)——MOON Model for Contrastive Federated Learning (Alignment of Local and Global Model Representations)
++ **2021CVPR**  "Model-Contrastive Federated Learning" [Paper](https://arxiv.org/pdf/2103.16257) & [Github](https://github.com/QinbinLi/MOON)——MOON(Alignment of Local and Global Model Representations)
 
-+ **2022AAAI** "FedProto: Federated Prototype Learning across Heterogeneous Clients"[Paper](https://arxiv.org/pdf/2105.00243)——FedProto Federated Prototype Learning (Alignment of Local and Global Prototype Representations)
++ **2022AAAI** "FedProto: Federated Prototype Learning across Heterogeneous Clients"[Paper](https://arxiv.org/pdf/2105.00243)——FedProto(Alignment of Local and Global Prototype Representations)
 
-+ **2023FGCS** "FedProc: Prototypical contrastive federated learning on non-IID data" [Paper](https://arxiv.org/pdf/2109.12273)——FedProc Prototype Contrastive Federated Learning (Alignment of Local and Global Prototype Representations)
++ **2023FGCS** "FedProc: Prototypical contrastive federated learning on non-IID data" [Paper](https://arxiv.org/pdf/2109.12273)——FedProc(Alignment of Local and Global Prototype Representations)
   
-+ **2020ICML** "SCAFFOLD:Stochastic Controlled Averaging for Federated Learning"[Paper](https://arxiv.org/pdf/1910.06378)——SCAFFOLD Stochastic Controlled Federated Learning (Alignment of Local and Global Optimization Directions)
++ **2020ICML** "SCAFFOLD:Stochastic Controlled Averaging for Federated Learning"[Paper](https://arxiv.org/pdf/1910.06378)——SCAFFOLD(Alignment of Local and Global Optimization Directions)
   
-+ **2021ICLR** " FEDERATED LEARNING BASED ON DYNAMIC REGULARIZATION"[Paper](https://arxiv.org/pdf/2111.04263)——FedDyn Dynamic Regularization Federated Learning (Alignment of Local and Global Losses)
++ **2021ICLR** "FEDERATED LEARNING BASED ON DYNAMIC REGULARIZATION"[Paper](https://arxiv.org/pdf/2111.04263)——FedDyn(Alignment of Local and Global Losses)
 
-+ **2022NeurIPS** "Preservation of the Global Knowledge by Not-True Distillation in Federated Learning" [Paper](https://arxiv.org/pdf/2106.03097 )——FedNTD Not-True Distillation Federated Learning (Alignment of Unseen Local Losses with Global Losses)
++ **2022NeurIPS** "Preservation of the Global Knowledge by Not-True Distillation in Federated Learning" [Paper](https://arxiv.org/pdf/2106.03097 )——FedNTD(Alignment of Unseen Local Losses with Global Losses)
 
-+  **2021ICLR** "ADAPTIVE FEDERATED OPTIMIZATION"[Paper](https://arxiv.org/pdf/2003.00295)——FedOpt Adaptive Federated Learning (Server-Side Aggregation Optimization)
++  **2021ICLR** "ADAPTIVE FEDERATED OPTIMIZATION"[Paper](https://arxiv.org/pdf/2003.00295)——FedOpt(Server-Side Aggregation Optimization)
 
-+ **2024CVPR**  "Fair Federated Learning under Domain Skew with Local Consistency and Domain Diversity"[Paper](https://arxiv.org/pdf/2405.16585) & [Github](https://github.com/yuhangchen0/FedHEAL)——FedHEAL Cross-Domain Federated Learning (Alignment of Local and Global Model Representations)
++ **2024CVPR**  "Fair Federated Learning under Domain Skew with Local Consistency and Domain Diversity"[Paper](https://arxiv.org/pdf/2405.16585) & [Github](https://github.com/yuhangchen0/FedHEAL)——FedHEAL(Alignment of Local and Global Model Representations)
 
-+ **2023WACV**  "Federated Domain Generalization for Image Recognition via Cross-Client Style Transfer"[Paper](https://arxiv.org/pdf/2210.00912) & [Github](https://chenjunming.ml/proj/CCST)——CCST Cross-Domain Federated Learning (Alignment of Local and Global Optimization Directions)
++ **2023WACV**  "Federated Domain Generalization for Image Recognition via Cross-Client Style Transfer"[Paper](https://arxiv.org/pdf/2210.00912) & [Github](https://chenjunming.ml/proj/CCST)——CCST(Alignment of Local and Global Optimization Directions)
 
-+ **2023TMC**  "FedFA: Federated Learning with Feature Anchors to Align Features and Classifiers for Heterogeneous Data"[Paper](https://arxiv.org/pdf/2211.09299)——FedFA Feature Anchor Federated Learning (Alignment of Features and Classifiers)
++ **2023TMC**  "FedFA: Federated Learning with Feature Anchors to Align Features and Classifiers for Heterogeneous Data"[Paper](https://arxiv.org/pdf/2211.09299)——FedFA(Alignment of Features and Classifiers)
 
-+ **2024AAAI** "CLIP-Guided Federated Learning on Heterogeneous and Long-Tailed Data"[Paper](https://arxiv.org/pdf/2312.08648)——CLIP as Backbond For FL
++ **2024AAAI** "CLIP-Guided Federated Learning on Heterogeneous and Long-Tailed Data"[Paper](https://arxiv.org/pdf/2312.08648)——CLIP As Backbond For FL
 
 + **2023CVPR** "Rethinking Federated Learning with Domain Shift: A Prototype View"[Paper](https://openaccess.thecvf.com/content/CVPR2023/papers/Huang_Rethinking_Federated_Learning_With_Domain_Shift_A_Prototype_View_CVPR_2023_paper.pdf) & [Github](https://github.com/WenkeHuang/RethinkFL/tree/main)——Cross-Domain Prototype Loss Alignment
 
@@ -658,6 +678,10 @@ When I completed this project, I was a third-year undergraduate student. 🌿 I 
 + **2021ICLR** "FEDMIX: APPROXIMATION OF MIXUP UNDER MEAN AUGMENTED FEDERATED LEARNING" [Paper](https://arxiv.org/pdf/2107.00233)——Mixup For FL
 
 + **2021PMLR** "Data-Free Knowledge Distillation for Heterogeneous Federated Learning"  [Paper](https://arxiv.org/pdf/2105.10056)——Data-Free Knowledge Distillation For FL
+
 + **2017ICML** "Communication-Efficient Learning of Deep Networks from Decentralized Data" [Paper](https://arxiv.org/pdf/1602.05629)——FedAvg(Average aggregation)
+
+
+
 
 

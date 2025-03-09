@@ -1,5 +1,5 @@
 # 针对cifar-100，由于有100个类，所以一个客户端生成的txt将不会只占据一行，而是多行，因此检索的时候需要变换
-# best_client_guidance.py 本脚本用于根据data_distribution_CIFAR-10.py生成的各个客户端的类分布,生成各个类指导的客户端集合
+# client_guided_set.py 本脚本用于根据data_distribution_CIFAR-10 or 100 or 200.py生成的各个客户端的类分布,生成各个类指导的客户端集合
 import numpy as np
 import os
 import argparse
