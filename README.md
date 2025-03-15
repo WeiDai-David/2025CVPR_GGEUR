@@ -51,16 +51,25 @@ Office-Home-LDS/
 
 ---
 
-<!-- # ⚙️ Engineering
+<!-- # ⚙️ Engineering -->
 
-## 🌐 Environment
+# 🌐 Environment
 
+## Provide two options
+
+**(1):Download dependency**
 ```bash
 conda create -n GGEUR python=3.9
 conda activate GGEUR
+pip install -r requirements.txt  
+```
+**(2):Download environment (prefer)**
+```bash
+conda env create -f environment.yaml 
 ```
 
---- -->
+
+---
 
 # 🚀 Single Domain
 
