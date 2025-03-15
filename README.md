@@ -7,6 +7,10 @@
 
 # Geometric Knowledge-Guided Localized Global Distribution Alignment for Federated Learning
 
+> **Geometric Knowledge-Guided Localized Global Distribution Alignment for Federated Learning**  
+> Yanbiao Ma*, Wei Dai*, Wenke Huang†, Jiayi Chen  
+> Accepted to CVPR 2025  [🔗Link](https://arxiv.org/pdf/2503.06457) 
+
 <!-- **项目整理中 待完成的工作 7/3/2025**：
 
 (1):英文版本 <br>
@@ -14,7 +18,6 @@
 (3):子工程内脚本的逻辑关系图 子工程间的逻辑关系图<br>
 (4):站在模型视野(流形空间)的角度将我们的思想以图的方式剖析<br>
 (5):更优美更逻辑的 md 表述<br> -->
-## **Paper:** [🔗Arxiv (2025CVPR)](https://arxiv.org/pdf/2503.06457) 
 
 # 📝 Abstract
 
@@ -44,6 +47,7 @@ Office-Home-LDS/
 ├── Dataset-Office-Home-LDS.py #  Python script for processing and splitting original raw dataset
 └── README.md                  #  Project documentation
 ```
+
 
 ---
 
@@ -1095,3 +1099,20 @@ When I completed this project, I was a third-year undergraduate student. 🌿 I 
 - **2021PMLR** "Data-Free Knowledge Distillation for Heterogeneous Federated Learning" [Paper](https://arxiv.org/pdf/2105.10056)——Data-Free Knowledge Distillation For FL
 
 - **2017ICML** "Communication-Efficient Learning of Deep Networks from Decentralized Data" [Paper](https://arxiv.org/pdf/1602.05629)——FedAvg(Average aggregation)
+
+---
+
+## 💡 Citation  
+If you find our work useful, please cite it using the following BibTeX format:  
+```bibtex
+@inproceedings{ma2025geometric,
+  title={Geometric Knowledge-Guided Localized Global Distribution Alignment for Federated Learning},
+  author={Ma, Yanbiao and Dai, Wei and Huang, Wenke and Chen, Jiayi},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  year={2025},
+  note={Accepted}
+}
+```
+
+## 📧 Contact 
+**For any questions or help, feel welcome to write an email to <br> 22012100039@stu.xidian.edu.cn or wdai@stu.xidian.edu.cn**
