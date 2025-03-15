@@ -14,11 +14,11 @@
 (3):子工程内脚本的逻辑关系图 子工程间的逻辑关系图<br>
 (4):站在模型视野(流形空间)的角度将我们的思想以图的方式剖析<br>
 (5):更优美更逻辑的 md 表述<br> -->
+## **Paper:** [🔗Arxiv (2025CVPR)](https://arxiv.org/pdf/2503.06457) 
 
 # 📝 Abstract
 
-Data heterogeneity in federated learning, characterized by a significant misalignment between local and global distributions, leads to divergent local optimization directions and hinders global model training.Existing studies mainly focus on optimizing local updates or global aggregation, but these indirect approaches demonstrate instability when handling highly heterogeneous data distributions, especially in scenarios where label skew and domain skew coexist.To address this, we propose a geometry-guided data generation method that centers on simulating the global embedding distribution locally. We first introduce the concept of the geometric shape of an embedding distribution and then address the challenge of obtaining global geometric shapes under privacy constraints. Subsequently, we propose GGEUR, which leverages global geometric shapes to guide the generation of new samples, enabling a closer approximation to the ideal global distribution.In single-domain scenarios, we augment samples based on global geometric shapes to enhance model generalization;in multi-domain scenarios, we further employ class prototypes to simulate the global distribution across domains.Extensive experimental results demonstrate that our method significantly enhances the performance of existing approaches in handling highly heterogeneous data, including scenarios with label skew, domain skew, and their coexistence. **Paper:** [🔗 Arxiv](https://arxiv.org/pdf/2503.06457)
-
+Data heterogeneity in federated learning, characterized by a significant misalignment between local and global distributions, leads to divergent local optimization directions and hinders global model training.Existing studies mainly focus on optimizing local updates or global aggregation, but these indirect approaches demonstrate instability when handling highly heterogeneous data distributions, especially in scenarios where label skew and domain skew coexist.To address this, we propose a geometry-guided data generation method that centers on simulating the global embedding distribution locally. We first introduce the concept of the geometric shape of an embedding distribution and then address the challenge of obtaining global geometric shapes under privacy constraints. Subsequently, we propose GGEUR, which leverages global geometric shapes to guide the generation of new samples, enabling a closer approximation to the ideal global distribution.In single-domain scenarios, we augment samples based on global geometric shapes to enhance model generalization;in multi-domain scenarios, we further employ class prototypes to simulate the global distribution across domains.Extensive experimental results demonstrate that our method significantly enhances the performance of existing approaches in handling highly heterogeneous data, including scenarios with label skew, domain skew, and their coexistence.
 <!-- --- -->
 
 <!-- ## 🔑 Key words
@@ -451,7 +451,7 @@ output_indices/dataset_report.txt                                  # Total sampl
 
 ---
 
-### 🔁 3. Cross Indexing
+### ✅ 3. Cross Indexing
 
 We have obtained client indices and class indices for each domain.  
 By performing cross-indexing, we can generate class-specific indices for each client.
@@ -470,7 +470,7 @@ output_client_class_indices/{domain_name}/client_{client_id}_class_{0~9}_indices
 
 ---
 
-### 🎯 4. Training Set Feature Extraction
+### ✅ 4. Training Set Feature Extraction
 
 Using **CLIP** as the backbone, we extract features and labels for each client-class index file.
 
@@ -631,9 +631,9 @@ Therefore, there is an urgent need for a more realistic and challenging dataset 
 
 ---
 
-## ✅ PACS
+## 🏷️ PACS
 
-### 🏷️ 1. Dataset Overview
+### 📌 1. Dataset Overview
 
 The PACS dataset contains data from four different domains, with seven categories:  
 **Dog**, **Elephant**, **Giraffe**, **Guitar**, **Horse**, **House**, **Person**
@@ -671,7 +671,7 @@ python data_distribution_digits.py
 
 ---
 
-### 🔁 3. Cross Indexing
+### ✅ 3. Cross Indexing
 
 We have obtained the client indices and class indices for each domain.  
 By performing cross-indexing, we can generate class-specific indices for each client.
@@ -690,7 +690,7 @@ output_client_class_indices/{domain_name}/client_{client_id}_class_{0~6}_indices
 
 ---
 
-### 🎯 4. Training Set Feature Extraction
+### ✅ 4. Training Set Feature Extraction
 
 We have obtained class-specific index files for each client in the four domains.  
 Using **CLIP** as the backbone, we extract features for each index file and generate the corresponding feature and label files.
@@ -710,7 +710,7 @@ clip_pacs_train_features/{domain_name}/client_{client_id}_class_{0~6}_labels.npy
 
 ---
 
-### 🏆 5. Test Set Feature Extraction
+### ✅ 5. Test Set Feature Extraction
 
 We extract features and labels for the test set using CLIP as the backbone.
 
@@ -729,7 +729,7 @@ clip_test_features/{domain_name}/{domain_name}_test_labels.npy
 
 ---
 
-### 🏋️‍♂️ 6. Training Under Different Federated Architectures
+### ✅ 6. Training Under Different Federated Architectures
 
 We train both the original and augmented models under different federated architectures to compare performance:
 
@@ -748,9 +748,9 @@ python SCAFFOLD.py
 
 ---
 
-## ✅ Office-Caltech-10
+## 🏷️ Office-Caltech-10
 
-### 🏷️ 1. Dataset Overview
+### 📌 1. Dataset Overview
 
 The Office-Caltech-10 dataset contains data from four different domains, representing 10 categories:  
 **Headphones**, **Keyboard**, **Laptop**, **Monitor**, **Mouse**, **Mug**, **Projector**, **Bike**
@@ -788,7 +788,7 @@ output_indices/client_combined_class_distribution.txt        # Class distributio
 
 ---
 
-### 🔁 3. Cross Indexing
+### ✅ 3. Cross Indexing
 
 We have obtained client indices and class indices for each domain.  
 By performing cross-indexing, we can generate class-specific indices for each client.
@@ -807,7 +807,7 @@ output_client_class_indices/{domain_name}/client_{client_id}_class_{0~64}_indice
 
 ---
 
-### 🎯 4. Training Set Feature Extraction
+### ✅ 4. Training Set Feature Extraction
 
 We have obtained class-specific index files for each client in the four domains.  
 Using **CLIP** as the backbone, we extract features for each index file and generate the corresponding feature and label files.
@@ -827,7 +827,7 @@ clip_office_home_train_features/{domain_name}/client_{client_id}_class_{0~64}_la
 
 ---
 
-### 🏆 5. Test Set Feature Extraction
+### ✅ 5. Test Set Feature Extraction
 
 We extract features and labels for the test set using CLIP as the backbone.
 
@@ -846,7 +846,7 @@ clip_test_features/{domain_name}/{domain_name}_test_labels.npy
 
 ---
 
-### 🏋️‍♂️ 6. Training Under Different Federated Architectures
+### ✅ 6. Training Under Different Federated Architectures
 
 We train both the original and augmented models under different federated architectures to compare performance:
 
@@ -865,9 +865,9 @@ python SCAFFOLD联.py
 
 ---
 
-## ✅ Office-Home-LDS
+## 🏷️ Office-Home-LDS
 
-### 🏷️ 1. Dataset Overview
+### 📌 1. Dataset Overview
 
 The **Office-Home-LDS** dataset contains data from four different domains, covering **65 categories**:
 
@@ -904,7 +904,7 @@ python data_distribution_Office_Home_LDS.py
 
 ---
 
-### 🔁 3. Cross Indexing
+### ✅ 3. Cross Indexing
 
 We have obtained client indices and class indices for each domain.  
 By performing cross-indexing, we can generate class-specific indices for each client.
@@ -923,7 +923,7 @@ output_client_class_indices/{domain_name}/client_{client_id}_class_{0~64}_indice
 
 ---
 
-### 🎯 4. Training Set Feature Extraction
+### ✅ 4. Training Set Feature Extraction
 
 We have obtained class-specific index files for each client in the four domains.  
 Using **CLIP** as the backbone, we extract features for each index file and generate the corresponding feature and label files.
@@ -943,7 +943,7 @@ clip_office_home_train_features/{domain_name}/client_{client_id}_class_{0~64}_la
 
 ---
 
-### 🏆 5. Test Set Feature Extraction
+### ✅ 5. Test Set Feature Extraction
 
 We extract features and labels for the test set using CLIP as the backbone.
 
@@ -962,7 +962,7 @@ clip_test_features/{domain_name}/{domain_name}_test_labels.npy
 
 ---
 
-### 🔍 6. Prototype Extraction
+### ✅ 6. Prototype Extraction
 
 Using the client-class index files obtained earlier, we extract class prototypes for each client.
 
@@ -980,7 +980,7 @@ python prototype_clip_features2tensor.py
 
 ---
 
-### 🔬 7. Geometric Direction
+### ✅ 7. Geometric Direction
 
 From the perspective of the manifold space, cross-domain differences are caused by shifts in class distribution, but the geometric structure remains unchanged.  
 Thus, we can use the combined features from multiple domains to represent the geometric structure.
@@ -1005,7 +1005,7 @@ cov_matrix_output/class_{0~64}_cov_matrix.npy
 
 ---
 
-### 🏗️ 8. Geometry-Guided Data Augmentation
+### ✅ 8. Geometry-Guided Data Augmentation
 
 We now have the geometric direction and class prototypes for multiple domains.  
 For data augmentation:
@@ -1029,7 +1029,7 @@ argumented_clip_features/{domain_name}/client_{client_id}_class_{0~64}/labels_fi
 
 ---
 
-### 🏋️‍♂️ 9. Training Under Different Federated Architectures
+### ✅ 9. Training Under Different Federated Architectures
 
 We train both the original and augmented models under different federated architectures to compare performance:
 
