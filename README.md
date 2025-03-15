@@ -195,7 +195,7 @@ python TinyImageNet_val_features.py            # Extract validation set features
 {dataset_name}/class_{class_label}_val_indices.npy            # Indices of each class in validation set
 ```
 
-## 🔢 2. Cross Indexing
+## ✅ 2. Cross Indexing
 
 We have obtained the data indexes for the CIFAR-10, CIFAR-100, and TinyImageNet datasets, including the data indexes for each client and each class.
 
@@ -403,9 +403,10 @@ python FL_MLP_200.py  # Train on TinyImageNet dataset
 
 ---
 
-# ✅ Cross-Domain Scenarios
+# 🚀  Cross-Domain Scenarios
 
-We conducted experiments on the **Digits**, **PACS**, and **Office-Caltech-10** datasets, and proposed a new dataset called **Office-Home-LDS**.
+We conducted experiments on the **Digits**, **PACS**, and **Office-Caltech-10** datasets, and proposed a new dataset called **Office-Home-LDS**.<br>
+In cross domain scenarios, we follow the previous work setup of dividing one domain into one client.
 
 ---
 
@@ -454,7 +455,7 @@ By performing cross-indexing, we can generate class-specific indices for each cl
 #### Run Script
 
 ```bash
-python 交叉索引.py
+python client_class_cross_index.py
 ```
 
 #### Output
@@ -479,7 +480,7 @@ Using **CLIP** as the backbone, we extract features and labels for each client-c
 #### Run Script
 
 ```bash
-python 训练集特征.py
+python train_client_class_clip_features2tensor.py
 ```
 
 #### Output
@@ -504,7 +505,7 @@ We extract features and labels for the test set using CLIP as the backbone.
 #### Run Script
 
 ```bash
-python 测试集特征.py
+python test_clip_features2tensor.py
 ```
 
 #### Output
@@ -523,7 +524,7 @@ Using the client-class index files, we extract prototypes for each class.
 #### Run Script
 
 ```bash
-python 提取原型.py
+python prototype_clip_features2tensor.py
 ```
 
 #### Output
@@ -536,7 +537,7 @@ clip_prototypes/{domain_name}/client_{client_id}_class_{0~9}_prototype.npy
 
 ### ✅ 7. Geometric Direction
 
-From the perspective of the manifold space, cross-domain differences are caused by shifts in class distribution, but the geometric structure remains unchanged.  
+From the **perspective** of the **manifold space**, cross-domain differences are caused by **shifts in class distribution**, but the **geometric structure remains unchanged**.  
 Thus, we can use the combined features from multiple domains to represent the geometric structure.
 
 #### Parameters
@@ -548,7 +549,7 @@ Thus, we can use the combined features from multiple domains to represent the ge
 #### Run Script
 
 ```bash
-python 聚合协方差矩阵4x10=10.py
+python clip_tensor2aggregate_covariance_matrix.py
 ```
 
 #### Output
@@ -572,7 +573,7 @@ This allows the client to learn cross-domain features even from its own perspect
 #### Run Script
 
 ```bash
-python 扩充-放大聚合协方差矩阵-类原型-类中心.py
+python prototype_cov_matrix_generate_features.py
 ```
 
 #### Output
@@ -591,22 +592,22 @@ We train both the original and augmented models under different federated archit
 #### Run Script
 
 ```bash
-python FedAvg联邦原始特征.py
-python FedAvg联邦补全特征.py
-python FedNTD联邦原始特征.py
-python FedNTD联邦补全特征.py
-python FedOpt联邦原始特征.py
-python FedOpt联邦补全特征.py
-python FedProx联邦原始特征.py
-python FedProx联邦补全特征.py
-python MOON联邦原始特征.py
-python MOON联邦补全特征.py
-python FedDyn联邦原始特征.py
-python FedDyn联邦补全特征.py
-python FedProto联邦原始特征.py
-python FedProto联邦补全特征.py
-python SCAFFOLD联邦原始特征.py
-python SCAFFOLD联邦补全特征.py
+python FedAvg.py
+python FedAvg_GGEUR.py
+python FedNTD.py
+python FedNTD_GGEUR.py
+python FedOpt.py
+python FedOpt_GGEUR.py
+python FedProx.py
+python FedProx_GGEUR.py
+python MOON.py
+python MOON_GGEUR.py
+python FedDyn.py
+python FedDyn_GGEUR.py
+python FedProto.py
+python FedProto_GGEUR.py
+python SCAFFOLD.py
+python SCAFFOLD_GGEUR.py
 ```
 
 ---
@@ -615,14 +616,14 @@ python SCAFFOLD联邦补全特征.py
 
 PACS and Office-Caltech-10 are small-sample datasets with fewer classification tasks:
 
-- ✅ Small sample size – Low classification difficulty.
+- ✅ Fewer classification tasks – Low classification difficulty.
 - ✅ High inter-class variation – Easier to distinguish between classes.
 - ✅ Similar training and test sets – Improves accuracy implicitly.
 - ✅ Balanced intra-domain classes – Following a proportional random split.
 
 With the development of self-supervised learning, the challenges posed by cross-domain datasets like PACS and Office_Caltech_10 have been significantly weakened when using backbones such as CLIP and DINO.
 
-Therefore, there is an urgent need for a more realistic and challenging dataset that better reflects real-world scenarios. To address this, we propose **Office-Home-LDS** — a dataset built upon the Office-Home dataset (65 classes) that incorporates both cross-domain and data heterogeneity. This clearly aligns better with real-world conditions.
+Therefore, there is an urgent need for a more realistic and challenging dataset that better reflects real-world scenarios. To address this, we propose **Office-Home-LDS** — a dataset built upon the Office-Home dataset (65 classes) that incorporates both cross-domain(**domain skew**) and data heterogeneity(**label skew**). This clearly aligns better with real-world conditions.
 
 ---
 
