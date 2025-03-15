@@ -66,9 +66,10 @@ conda activate GGEUR
 
 ### CIFAR 10 & 100 dataset
 
-Dataset index parsing:
+#### Dataset index parsing:
 
 > The CIFAR dataset is sorted by subsets of the same class, so the indexing process is directly arranged by the number of classes.
+
 
 #### Optional Parameters
 
@@ -156,7 +157,7 @@ Label IDs (`n + 8 digits`) will be indexed.For consistency, the `n` prefix will 
 - 📝 `TinyImageNet_Val.py` (validation set partitioning)
   At this point, we have completed the reconstruction of the TinyImageNet dataset, laying the groundwork for the subsequent indexing and partitioning tasks.
 
----
+
 
 #### Parameters
 
@@ -166,7 +167,6 @@ Label IDs (`n + 8 digits`) will be indexed.For consistency, the `n` prefix will 
 | `alpha`            | float   | Dirichlet coefficient   |
 | `min_require_size` | integer | Minimum allocation size |
 
----
 
 #### Run Scripts
 
@@ -178,7 +178,6 @@ python TinyImageNet_val_index_tag_img_matching_test.py  # Validate processed val
 python TinyImageNet_val_features.py            # Extract validation set features
 ```
 
----
 
 #### Output
 
@@ -194,7 +193,7 @@ python TinyImageNet_val_features.py            # Extract validation set features
 {dataset_name}/val_context/val_labels.npy                     # Labels corresponding to validation set indices
 {dataset_name}/class_{class_label}_val_indices.npy            # Indices of each class in validation set
 ```
-
+---
 ## ✅ 2. Cross Indexing
 
 We have obtained the data indexes for the CIFAR-10, CIFAR-100, and TinyImageNet datasets, including the data indexes for each client and each class.
