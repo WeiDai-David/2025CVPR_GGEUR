@@ -6,386 +6,593 @@
 关键词：联邦学习、数据异质、域泛化、感知流形 -->
 
 # 2025CVPR_GGEUR
-**项目整理中 待完成的工作 7/3/2025**：
+
+<!-- **项目整理中 待完成的工作 7/3/2025**：
 
 (1):英文版本 <br>
 (2):各个子工程脚本名的逻辑重构<br>
 (3):子工程内脚本的逻辑关系图 子工程间的逻辑关系图<br>
 (4):站在模型视野(流形空间)的角度将我们的思想以图的方式剖析<br>
-(5):更优美更逻辑的md表述<br>
+(5):更优美更逻辑的 md 表述<br> -->
 
-**Abstract:** Data heterogeneity in federated learning, characterized by a significant misalignment between local and global distributions, leads to divergent local optimization directions and hinders global model training. Existing studies mainly focus on optimizing local updates or global aggregation, but these indirect approaches demonstrate instability when handling highly heterogeneous data distributions, especially in scenarios where label skew and domain skew coexist. To address this, we propose a geometry-guided data generation method that centers on simulating the global embedding distribution locally. We first introduce the concept of the geometric shape of an embedding distribution and then address the challenge of obtaining global geometric shapes under privacy constraints. Subsequently, we propose GGEUR, which leverages global geometric shapes to guide the generation of new samples, enabling a closer approximation to the ideal global distribution. In singledomain scenarios, we augment samples based on global geometric shapes to enhance model generalization; in multidomain scenarios, we further employ class prototypes to simulate the global distribution across domains. Extensive experimental results demonstrate that our method significantly enhances the performance of existing approaches in handling highly heterogeneous data, including scenarios with label skew, domain skew, and their coexistence. Code published at: https://github.com/WeiDaiDavid/2025CVPR_GGEUR
+# 📝 Abstract
 
-**key word:** Federated Learning, Data Heterogeneity, Domain Generalization, Perceptual Manifold
+Data heterogeneity in federated learning, characterized by a significant misalignment between local and global distributions, leads to divergent local optimization directions and hinders global model training.Existing studies mainly focus on optimizing local updates or global aggregation, but these indirect approaches demonstrate instability when handling highly heterogeneous data distributions, especially in scenarios where label skew and domain skew coexist.To address this, we propose a geometry-guided data generation method that centers on simulating the global embedding distribution locally. We first introduce the concept of the geometric shape of an embedding distribution and then address the challenge of obtaining global geometric shapes under privacy constraints. Subsequently, we propose GGEUR, which leverages global geometric shapes to guide the generation of new samples, enabling a closer approximation to the ideal global distribution.In single-domain scenarios, we augment samples based on global geometric shapes to enhance model generalization;in multi-domain scenarios, we further employ class prototypes to simulate the global distribution across domains.Extensive experimental results demonstrate that our method significantly enhances the performance of existing approaches in handling highly heterogeneous data, including scenarios with label skew, domain skew, and their coexistence.
 
-## New Dataset Office-Home-LDS 
+<!-- --- -->
 
-Dataset & constructor ： <a href="https://huggingface.co/datasets/WeiDai-David/Office-Home-LDS" target="_blank">Huggingface</a>
+<!-- ## 🔑 Key words
+
+**Federated Learning**, **Data Heterogeneity**, **Domain Generalization**, **Perceptual Manifold** -->
+
+---
+
+# 📂 New Dataset: Office-Home-LDS
+
+**Dataset & Constructor:** 👉 [📥 Huggingface](https://huggingface.co/datasets/WeiDai-David/Office-Home-LDS)
 
 The dataset is organized as follows:
+
 ```text
 Office-Home-LDS/
-├── data/ 
-│   └── Office-Home.zip        # Original raw dataset (compressed)
-├── new_dataset/               # Processed datasets based on different settings
-│   ├── Office-Home-0.1.zip    # Split with Dirichlet α = 0.1 (compressed)
-│   ├── Office-Home-0.5.zip    # Split with Dirichlet α = 0.5 (compressed)
-│   └── Office-Home-0.05.zip   # Split with Dirichlet α = 0.05 (compressed)
-├── Dataset-Office-Home-LDS.py # Python script for processing and splitting Original raw dataset
-└── README.md                  # Project documentation
+├── data/
+│   └── Office-Home.zip        #  Original raw dataset (compressed)
+├── new_dataset/               #  Processed datasets based on different settings
+│   ├── Office-Home-0.1.zip    #  Split with Dirichlet α = 0.1 (compressed)
+│   ├── Office-Home-0.5.zip    #  Split with Dirichlet α = 0.5 (compressed)
+│   └── Office-Home-0.05.zip   #  Split with Dirichlet α = 0.05 (compressed)
+├── Dataset-Office-Home-LDS.py #  Python script for processing and splitting original raw dataset
+└── README.md                  #  Project documentation
 ```
-## Engineering 
 
-Environment：
+---
+
+<!-- # ⚙️ Engineering
+
+## 🌐 Environment
+
 ```bash
 conda create -n GGEUR python=3.9
 conda activate GGEUR
-
 ```
 
+--- -->
 
+# 🚀 Single Domain
 
-## Single Domain
+---
 
-1.Dataset Partitioning
-CIFAR (10 & 100) dataset:
+## 🗂️ 1. Dataset Partitioning
+
+### CIFAR 10 & 100 dataset
+
 Dataset index parsing:
-```text
-The CIFAR dataset is sorted by subsets of the same class, so the indexing process is directly arranged by the number of classes
-```
-Optional parameters:
-```bash
-num_clients integer Number of clients
-alpha 浮点数 狄利克雷系数
-min_require_size 整数 最小分配数
-```
-执行脚本:
+
+> The CIFAR dataset is sorted by subsets of the same class, so the indexing process is directly arranged by the number of classes.
+
+#### Optional Parameters
+
+| Parameter          | Type    | Description             |
+| ------------------ | ------- | ----------------------- |
+| `num_clients`      | integer | Number of clients       |
+| `alpha`            | float   | Dirichlet coefficient   |
+| `min_require_size` | integer | Minimum allocation size |
+
+#### Run Script
+
 ```bash
 python data_distribution_CIFAR-10.py
 python data_distribution_CIFAR-100.py
-python data_batch2index_images.py  检查划分
+python data_batch2index_images.py  # Check the partitioning
 ```
-运行结果:
+
+#### Output
+
 ```bash
-{数据集名称}/context/alpha={alpha}_class_counts.txt  统计划分后各类的总数(检查划分错误)
-{数据集名称}/context/alpha={alpha}_class_indices.txt  根据数据集划分的数据索引
-{数据集名称}/context/alpha={alpha}_client_indices.txt  各客户端分配到的数据索引
-{数据集名称}/context/alpha={alpha}_client_class_distribution.txt  各客户端下各类的数据分布
-{数据集名称}/images/alpha={alpha}_label_distribution_heatmap.png  各客户端分配各类数量的热力图
+{dataset_name}/context/alpha={alpha}_class_counts.txt         #  Total count of each class after partitioning (for validation)
+{dataset_name}/context/alpha={alpha}_class_indices.txt        #  Class indices based on partitioning
+{dataset_name}/context/alpha={alpha}_client_indices.txt       #  Data indices assigned to each client
+{dataset_name}/context/alpha={alpha}_client_class_distribution.txt #  Class distribution across clients
+{dataset_name}/images/alpha={alpha}_label_distribution_heatmap.png #  Heatmap showing the number of each class assigned to each client
 ```
-TinyImageNet数据集:
-数据集索引解析：
+
+---
+
+### TinyImageNet dataset
+
+#### Dataset Structure
+
 ```bash
-TinyImageNet数据集来源于ImageNet的200个类,同时并非线性排列,下面我们将进行数据集的重构
-TinyImageNet数据集的结构:
+📌 The TinyImageNet dataset is derived from 200 classes of ImageNet.
+⚠️ The class order is not linear, so reconstruction is required.
+
+TinyImageNet Structure:
 │
 ├── train/
-│   └── n01443537/   # 类别文件夹
-│       └── images/  # 类别对应的训练图像
-│           └── image_001.JPEG
-│           └── image_002.JPEG
+│   └── 🗂️ n01443537/   # Class folder
+│       └──  images/  # Training images for the class
+│           └──  image_001.JPEG
+│           └──  image_002.JPEG
 │           └── ...
 ├── val/
-│   ├── images/      # 验证图像
-│   └── val_annotations.txt  # 图像标签映射文件
+│   ├──  images/       # Validation images
+│   └──  val_annotations.txt  # Mapping between images and class IDs
 │
 ├── test/
-│    └── images/      # 测试图像
+│    └──  images/       # Test images
 │
-├── wnids.txt 类别对应的id
+├── wnids.txt         # Class ID list
 │
-└── words.txt 类别对应的标签
+└── words.txt         # Class label list
+```
 
-测试集没有标签,因此我们将验证集作为测试集,训练集遵循ImageNet的文件夹层次结构,验证集的图片
-都存储在val/images中,val/val_annotations.txt存储了验证集图片和标签id的映射关系
-通过Reorganized_TinyImageNet_Val.py脚本将验证集的结构和训练集结构对齐 
+👉 **Since the test set has no labels**, the validation set will be used as the test set.  
+👉 The training set follows the same folder structure as ImageNet.  
+👉 Validation images are stored in `val/images`, and the label mapping is in `val/val_annotations.txt`.
+👉 The script `Reorganized_TinyImageNet_Val.py` aligns the validation set structure with the training set:
 
+```bash
 │
 ├── train/
-│   └── n01443537/   # 类别文件夹
-│       └── images/  # 类别对应的训练图像
-│           └── image_001.JPEG
-│           └── image_002.JPEG
+│   └── 🗂️ n01443537/   # Class folder
+│       └──  images/  # Training images for the class
+│           └──  image_001.JPEG
+│           └──  image_002.JPEG
 │           └── ...
 ├── new_val/
-│   └── n01443537/   # 类别文件夹
-│       └── images/  # 类别对应的验证图像
-│           └── image_001.JPEG
-│           └── image_002.JPEG
+│   └── 🗂️ n01443537/   # Class folder
+│       └──  images/  # Validation images for the class
+│           └──  image_001.JPEG
+│           └──  image_002.JPEG
 │           └── ...
-
-接下来,我们需要对标签id(n+8位数)进行索引,为了统一,我们将标签id去除n后进行排序,以确定索引类顺序
-这部分工作在data_distribution_TinyImageNet.py(划分训练集)TinyImageNet_Val.py(划分验证集)中体现
-至此,我们完成TinyImageNet数据集的重构,并未接下来的索引划分工作铺垫
-```
-可选参数:
-```bash
-num_clients 整数 客户端数量
-alpha 浮点数 狄利克雷系数
-min_require_size 整数 最小分配数
-```
-执行脚本:
-```bash
-python reorganized_TinyImageNet_val.py  重构验证集
-python TinyImageNet_val_index.py  验证集索引转化
-python data_distribution_TinyImageNet.py
-python TinyImageNet_val_index_tag_img_matching_test.py 检查验证集处理
-python TinyImageNet_val_features.py 提取验证集特征
-```
-运行结果:
-```bash
-{数据集名称}/context/alpha={alpha}_class_counts.txt  统计划分后各类的总数(检查划分错误)
-{数据集名称}/context/alpha={alpha}_class_indices.txt  根据数据集划分的数据索引
-{数据集名称}/context/alpha={alpha}_client_indices.txt  各客户端分配到的数据索引
-{数据集名称}/context/alpha={alpha}_client_class_distribution.txt  各客户端下各类的数据分布
-{数据集名称}/images/alpha={alpha}_label_distribution_heatmap.png  各客户端分配各类数量的热力图
-{数据集名称}/context/class_map.txt  训练集类索引和标签id的映射
-{数据集名称}/val_context/class_map.txt  验证集类索引和标签id的映射
-{数据集名称}/val_context/val_indices.npy  验证集数据索引
-{数据集名称}/val_context/val_labels.npy  验证集数据索引对应的标签
-{数据集名称}/class_{class_label}_val_indices.npy  验证集各类的数据索引
 ```
 
-2.交叉索引
-我们已经得到了CIFAR-10、CIFAR-100、TinyImageNet三个数据集,各个客户端划分的数据索引,类的数据索引
-通过将两者进行交叉索引,我们能得到各个客户端下各个类的数据索引,以CIFAR-10为例：10个客户端*10个类=100个交叉索引文件
+💡 **After this:**  
+Label IDs (`n + 8 digits`) will be indexed.For consistency, the `n` prefix will be removed, and IDs will be sorted to define the class order.
 
-可选参数:
+📌 This is handled by:
+
+- 📝 `data_distribution_TinyImageNet.py` (training set partitioning)
+- 📝 `TinyImageNet_Val.py` (validation set partitioning)
+  At this point, we have completed the reconstruction of the TinyImageNet dataset, laying the groundwork for the subsequent indexing and partitioning tasks.
+
+---
+
+#### Parameters
+
+| Parameter          | Type    | Description             |
+| ------------------ | ------- | ----------------------- |
+| `num_clients`      | integer | Number of clients       |
+| `alpha`            | float   | Dirichlet coefficient   |
+| `min_require_size` | integer | Minimum allocation size |
+
+---
+
+#### Run Scripts
+
 ```bash
-dataset 字符串 数据集名称(三个数据集)
-alpha 浮点数 狄利克雷系数
+python reorganized_TinyImageNet_val.py         # Reorganize validation set
+python TinyImageNet_val_index.py               # Convert validation set indices
+python data_distribution_TinyImageNet.py       #  Partition training set
+python TinyImageNet_val_index_tag_img_matching_test.py  # Validate processed validation set
+python TinyImageNet_val_features.py            # Extract validation set features
 ```
-执行脚本:
+
+---
+
+#### Output
+
+```bash
+{dataset_name}/context/alpha={alpha}_class_counts.txt         # Total count of each class after partitioning (for validation)
+{dataset_name}/context/alpha={alpha}_class_indices.txt        # Class indices based on partitioning
+{dataset_name}/context/alpha={alpha}_client_indices.txt       # Data indices assigned to each client
+{dataset_name}/context/alpha={alpha}_client_class_distribution.txt # Class distribution across clients
+{dataset_name}/images/alpha={alpha}_label_distribution_heatmap.png # Heatmap showing the number of each class assigned to each client
+{dataset_name}/context/class_map.txt                          # Mapping between class index and class ID (training set)
+{dataset_name}/val_context/class_map.txt                      # Mapping between class index and class ID (validation set)
+{dataset_name}/val_context/val_indices.npy                    # Validation set indices
+{dataset_name}/val_context/val_labels.npy                     # Labels corresponding to validation set indices
+{dataset_name}/class_{class_label}_val_indices.npy            # Indices of each class in validation set
+```
+
+## 🔢 2. Cross Indexing
+
+We have obtained the data indexes for the CIFAR-10, CIFAR-100, and TinyImageNet datasets, including the data indexes for each client and each class.
+
+By performing cross-indexing between the two, we can generate the data indexes for each class under each client.
+
+Taking CIFAR-10 as an example: **10 clients × 10 classes = 100 cross-index files**
+
+### Parameters
+
+| Parameter | Type   | Description                                      |
+| --------- | ------ | ------------------------------------------------ |
+| `dataset` | string | Dataset name (CIFAR-10, CIFAR-100, TinyImageNet) |
+| `alpha`   | float  | Dirichlet coefficient                            |
+
+### Run Script
+
 ```bash
 python client_class_cross_index.py
 ```
-运行结果:
+
+### Output
+
 ```bash
-{数据集名称}/client_class_indices/alpha={alpha}_{dataset}_client_{client_id}_class_{class_id}_indices.npy
+{dataset_name}/client_class_indices/alpha={alpha}_{dataset}_client_{client_id}_class_{class_id}_indices.npy
 ```
 
-3.特征提取
-我们已经得到了三个数据集下,各个客户端下,各个类的索引文件,使用CLIP作为Backbond,我们对索引文件逐个进行特征提取
-得到对应的特征文件和标签文件
+---
 
-可选参数:
-```bash
-dataset 字符串 数据集名称(三个数据集)
-alpha 浮点数 狄利克雷系数
-```
-执行脚本:
+## ✅ 3. Feature Extraction
+
+We have obtained the index files of each class for each client in the three datasets.  
+Using **CLIP** as the backbone, we extract features for each index file and generate the corresponding feature and label files.
+
+### Parameters
+
+| Parameter | Type   | Description                                      |
+| --------- | ------ | ------------------------------------------------ |
+| `dataset` | string | Dataset name (CIFAR-10, CIFAR-100, TinyImageNet) |
+| `alpha`   | float  | Dirichlet coefficient                            |
+
+### Run Script
+
 ```bash
 python client_class_clip_features2tensor.py
 ```
-运行结果:
+
+### Output
+
 ```bash
-{数据集名称}/features/initial/alpha={alpha}_class_{class_idx}_client_{client_idx}/final_embeddings.npy
-{数据集名称}/features/initial/alpha={alpha}_class_{class_idx}_client_{client_idx}/labels.npy
+{dataset_name}/features/initial/alpha={alpha}_class_{class_idx}_client_{client_idx}/final_embeddings.npy
+{dataset_name}/features/initial/alpha={alpha}_class_{class_idx}_client_{client_idx}/labels.npy
 ```
 
-4.全局分布
-4.1 全局分布的客户端成分
-在1.数据集划分中得到的alpha={alpha}_client_class_distribution.txt,里面存储各客户端下各类的数据分布,
-通过类数量对客户端进行排序,根据阈值比例确定能近似全局分布的客户端集合
+---
 
-可选参数:
-```bash
-threshold 浮点数 阈值比例
-dataset 字符串 数据集名称(三个数据集)
-alpha 浮点数 狄利克雷系数
-```
-执行脚本:
+## ✅ 4. Global Distribution
+
+### 🔸 4.1 Global Distribution of Client Composition
+
+The file `alpha={alpha}_client_class_distribution.txt` generated in Section 1 contains the class distribution for each client.  
+Clients are sorted based on the number of classes, and a set of clients approximating the global distribution is determined according to a threshold ratio.
+
+#### Parameters
+
+| Parameter   | Type   | Description                                      |
+| ----------- | ------ | ------------------------------------------------ |
+| `threshold` | float  | Threshold                                        |
+| `dataset`   | string | Dataset name (CIFAR-10, CIFAR-100, TinyImageNet) |
+| `alpha`     | float  | Dirichlet coefficient                            |
+
+#### Run Script
+
 ```bash
 python client-guided_set.py
 ```
-运行结果:
+
+#### Output
+
 ```bash
-{数据集名称}/context/alpha={alpha}_selected_clients_for_each_class.txt
+{dataset_name}/context/alpha={alpha}_selected_clients_for_each_class.txt
 ```
-4.2 客户端集合的特征(可省略)
-在3.特征提取中得到各个客户端下各个类的特征文件,在4.1全局分布的客户端成分中得到各个类全局分布的客户端组成
-将后者对应的特征文件从前者中抽取
-可选参数:
-```bash
-dataset 字符串 数据集名称(三个数据集)
-alpha 浮点数 狄利克雷系数
-```
-执行脚本:
+
+---
+
+### 🔸 4.2 Client Set Features (Optional)
+
+In Section 3, we obtained feature files for each class for each client.  
+In Section 4.1, we obtained the client sets that approximate the global distribution for each class.  
+We now extract the corresponding feature files from the former using the latter.
+
+#### Parameters
+
+| Parameter | Type   | Description                                      |
+| --------- | ------ | ------------------------------------------------ |
+| `dataset` | string | Dataset name (CIFAR-10, CIFAR-100, TinyImageNet) |
+| `alpha`   | float  | Dirichlet coefficient                            |
+
+#### Run Script
+
 ```bash
 python client-guided_clip_tensor.py
 ```
-4.3 全局分布的表示
-如果客户端集合只有一个客户端，则直接对特征矩阵进行协方差矩阵的计算，如果客户端集合由多个客户端组成，则分别对
-特征矩阵进行协方差矩阵的计算，最后将多个协方差矩阵进行聚合，得到聚合协方差矩阵
-可选参数:
-```bash
-dataset 字符串 数据集名称(三个数据集)
-alpha 浮点数 狄利克雷系数
-```
-执行脚本:
+
+---
+
+### 🔸 4.3 Representation of Global Distribution
+
+If the client set contains only one client, the covariance matrix is calculated directly from the feature matrix.  
+If the client set contains multiple clients, the covariance matrix is calculated separately for each client’s feature matrix, and the resulting covariance matrices are aggregated to form the final aggregated covariance matrix.
+
+#### Parameters
+
+| Parameter | Type   | Description                                      |
+| --------- | ------ | ------------------------------------------------ |
+| `dataset` | string | Dataset name (CIFAR-10, CIFAR-100, TinyImageNet) |
+| `alpha`   | float  | Dirichlet coefficient                            |
+
+#### Run Script
+
 ```bash
 python clip_tensor2aggregate_covariance_matrix.py
 ```
-运行结果:
+
+#### Output
+
 ```bash
-{数据集名称}/features/alpha={alpha}_cov_matrix/class_{idx}_cov_matrix.npy
+{dataset_name}/features/alpha={alpha}_cov_matrix/class_{idx}_cov_matrix.npy
 ```
 
-5.几何引导的数据增强
-现在我们已经得到了全局分布的骨架(协方差矩阵),将协方差矩阵分解得到特征值和特征向量(几何方向),利用几何方向
-引导客户端中的原始样本进行数据增强
-可选参数:
-```bash
-dataset 字符串 数据集名称(三个数据集)
-alpha 浮点数 狄利克雷系数
-```
-执行脚本:
+---
+
+## ✅ 5. Geometry-Guided Data Augmentation
+
+Now that the global distribution framework (covariance matrix) has been obtained, the covariance matrix is decomposed to derive eigenvalues and eigenvectors (geometric directions).  
+These geometric directions are used to guide the augmentation of raw samples from the client set.
+
+### Parameters
+
+| Parameter | Type   | Description                                      |
+| --------- | ------ | ------------------------------------------------ |
+| `dataset` | string | Dataset name (CIFAR-10, CIFAR-100, TinyImageNet) |
+| `alpha`   | float  | Dirichlet coefficient                            |
+
+### Run Script
+
 ```bash
 python cov_matrix_generate_features.py
 ```
-运行结果:
+
+### Output
+
 ```bash
-{数据集名称}/features/alpha={alpha}_complete/final_embeddings_filled.npy
-{数据集名称}/features/alpha={alpha}_complete/labels_filled.npy
+{dataset_name}/features/alpha={alpha}_complete/final_embeddings_filled.npy
+{dataset_name}/features/alpha={alpha}_complete/labels_filled.npy
 ```
 
-6.单客户端训练
-在非联邦学习架构下,本地训练原始样本和增强样本,比较性能差异
+---
 
-可选参数:
-```bash
-alpha 浮点数 狄利克雷系数
-client_idx 整数 客户端编号
-batch_size 整数 批次大小
-learning_rate 浮点数 学习率
-num_epochs 整数 训练次数
-```
-执行脚本:
-```bash
-python MLP_10.py  CIFAR-10数据集训练
-python MLP_100.py  CIFAR-100数据集训练
-python MLP_200.py  TinyImageNet数据集训练
-```
+## ✅ 6. Single Client Training
 
-7.联邦架构FedAvg训练
-在最简单的联邦学习架构FedAvg(简单平均聚合)下,训练原始样本模型和增强样本模型,,比较性能差异
-可选参数:
+Under a non-federated learning architecture, train both the original and augmented samples locally and compare the performance differences.
+
+### Parameters
+
+| Parameter       | Type    | Description               |
+| --------------- | ------- | ------------------------- |
+| `alpha`         | float   | Dirichlet coefficient     |
+| `client_idx`    | integer | Client ID                 |
+| `batch_size`    | integer | Batch size                |
+| `learning_rate` | float   | Learning rate             |
+| `num_epochs`    | integer | Number of training epochs |
+
+### Run Script
+
 ```bash
-alpha 浮点数 狄利克雷系数
-communication_rounds 整数 通信轮数
-local_epochs 整数 本地训练次数
-client_count 整数 客户端数量
-batch_size 整数 批次大小
-learning_rate 浮点数 学习率
-```
-执行脚本:
-```bash
-python FL_MLP_10.py  CIFAR-10数据集训练
-python FL_MLP_100.py  CIFAR-100数据集训练
-python FL_MLP_200.py  TinyImageNet数据集训练
+python MLP_10.py   # Train on CIFAR-10 dataset
+python MLP_100.py  # Train on CIFAR-100 dataset
+python MLP_200.py  # Train on TinyImageNet dataset
 ```
 
-## 跨域情况 
-我们分别对Digits、PACS、office_caltech_10数据集进行实验,而后提出新数据集Office-Home-LDS
-Digits:
-1.数据集介绍：
-Digits 数据集包含四个不同的域（domains）的数据，类别为数字0-9这十种类别
-(1): MNIST（Mixed National Institute of Standards and Technology）：不同人手写的数字（0-9）
-(2): SVHN（Street View House Numbers）：谷歌街景的门牌号裁剪成数字（0-9）
-(3): USPS（United States Postal Service）：美国邮政编号裁剪的数字（0-9）
-(4): SynthDigits（Synthetic Digits）：合成方法生成的彩色（RGB）的数字（0-9）
-2.数据集划分
-我们遵循联邦跨域以往的工作设置：一个客户端划分一个域，同时各客户端按照比例进行随机划分
-执行脚本:
+---
+
+## ✅ 7. Federated Architecture FedAvg Training
+
+Under a basic federated learning architecture (FedAvg with simple averaging), train models using both the original and augmented samples and compare the performance differences.
+
+### Parameters
+
+| Parameter              | Type    | Description                     |
+| ---------------------- | ------- | ------------------------------- |
+| `alpha`                | float   | Dirichlet coefficient           |
+| `communication_rounds` | integer | Number of communication rounds  |
+| `local_epochs`         | integer | Number of local training epochs |
+| `client_count`         | integer | Number of clients               |
+| `batch_size`           | integer | Batch size                      |
+| `learning_rate`        | float   | Learning rate                   |
+
+### Run Script
+
+```bash
+python FL_MLP_10.py   # Train on CIFAR-10 dataset
+python FL_MLP_100.py  # Train on CIFAR-100 dataset
+python FL_MLP_200.py  # Train on TinyImageNet dataset
+```
+
+---
+
+# ✅ Cross-Domain Scenarios
+
+We conducted experiments on the **Digits**, **PACS**, and **Office-Caltech-10** datasets, and proposed a new dataset called **Office-Home-LDS**.
+
+---
+
+## 🏷️ Digits
+
+### 📌1. Dataset Overview
+
+The **Digits** dataset contains data from four different domains, representing digits from 0 to 9:
+
+- **MNIST** – 🖋️ Handwritten digits from different individuals (0-9)
+- **SVHN** – 🏠 Street View House Numbers (0-9)
+- **USPS** – 📬 Postal Service digits (0-9)
+- **SynthDigits** – 🎨 Synthetic RGB digits (0-9)
+
+---
+
+### 📂 2. Dataset Partitioning
+
+Following the standard settings for federated cross-domain work:
+
+- Each client is assigned one domain.
+- Within each domain, data is randomly partitioned based on a predefined ratio.
+
+#### Run Script
+
 ```bash
 python data_distribution_digits.py
 ```
-运行结果:
+
+#### Output
+
 ```bash
-output_indices/{域名称}/client_{域对应的客户端编号}_indices.npy  该域内客户端划分的索引
-output_indices/{域名称}/combined_class_indices.npy  该域内各类的索引集合
-output_indices/client_combined_class_distribution.txt  各域分配给对应客户端各类的数据分布
-output_indices/dataset_report.txt  各域分配给对应客户端的总数(检查划分错误)
+output_indices/{domain_name}/client_{client_id}_indices.npy         # Indices assigned to the client within the domain
+output_indices/{domain_name}/combined_class_indices.npy             # Combined class indices within the domain
+output_indices/client_combined_class_distribution.txt              # Class distribution per client within each domain
+output_indices/dataset_report.txt                                  # Total samples assigned to each client (for validation)
 ```
-3.交叉索引
-我们已经得到某域对应的客户端在该域划分的数据索引,以及该域的类别索引,通过交叉索引,我们可以得到该域对应客户端的各类的索引文件
-执行脚本:
+
+---
+
+### 🔁 3. Cross Indexing
+
+We have obtained client indices and class indices for each domain.  
+By performing cross-indexing, we can generate class-specific indices for each client.
+
+#### Run Script
+
 ```bash
 python 交叉索引.py
 ```
-运行结果:
+
+#### Output
+
 ```bash
-output_client_class_indices/{域名称}/client_{域对应的客户端编号}_class_{0~9}_indices.npy
+output_client_class_indices/{domain_name}/client_{client_id}_class_{0~9}_indices.npy
 ```
-4.训练集特征提取
-我们已经得到了四个域对应的四个客户端下,,各个类的索引文件,使用CLIP作为Backbond,我们对索引文件逐个进行特征提取得到对应的特征文件和标签文件
-可选参数:
-```bash
-datasets 字符串 域名称(四个可选域)
-report_file 字符串 域和客户端的映射文件
-```
-执行脚本:
+
+---
+
+### 🎯 4. Training Set Feature Extraction
+
+Using **CLIP** as the backbone, we extract features and labels for each client-class index file.
+
+#### Parameters
+
+| Parameter     | Type   | Description                                  |
+| ------------- | ------ | -------------------------------------------- |
+| `datasets`    | string | Domain name (MNIST, SVHN, USPS, SynthDigits) |
+| `report_file` | string | Number of communication rounds               |
+
+#### Run Script
+
 ```bash
 python 训练集特征.py
 ```
-运行结果:
+
+#### Output
+
 ```bash
-clip_features/{域名称}/client_{域对应的客户端编号}_class_{0~9}_original_features.npy
-clip_features/{域名称}/client_{域对应的客户端编号}_class_{0~9}_labels.npy
+clip_features/{domain_name}/client_{client_id}_class_{0~9}_original_features.npy
+clip_features/{domain_name}/client_{client_id}_class_{0~9}_labels.npy
 ```
-5.测试集特征提取
-可选参数:
-```bash
-datasets 字符串 域名称(四个可选域)
-```
-执行脚本:
+
+---
+
+### ✅ 5. Test Set Feature Extraction
+
+We extract features and labels for the test set using CLIP as the backbone.
+
+#### Parameters
+
+| Parameter  | Type   | Description                                  |
+| ---------- | ------ | -------------------------------------------- |
+| `datasets` | string | Domain name (MNIST, SVHN, USPS, SynthDigits) |
+
+#### Run Script
+
 ```bash
 python 测试集特征.py
 ```
-运行结果:
+
+#### Output
+
 ```bash
-clip_test_features/{域名称}/{域名称}_test_features.npy
-clip_test_features/{域名称}/{域名称}_test_labels.npy
+clip_test_features/{domain_name}/{domain_name}_test_features.npy
+clip_test_features/{domain_name}/{domain_name}_test_labels.npy
 ```
-6.提取原型
-通过前面得到的客户端类别索引文件，可以提取对应的类原型
-执行脚本:
+
+---
+
+### ✅ 6. Prototype Extraction
+
+Using the client-class index files, we extract prototypes for each class.
+
+#### Run Script
+
 ```bash
 python 提取原型.py
 ```
-运行结果:
+
+#### Output
+
 ```bash
-clip_prototypes/{域名称}/client_{域对应的客户端编号}_class_{0~9}_prototype.npy
+clip_prototypes/{domain_name}/client_{client_id}_class_{0~9}_prototype.npy
 ```
-7.几何方向
-在流形空间的视角，跨域的本质是类对应的流形分布发生横向的偏移，几何方向并没有变化，因此我们可以利用多域的合并特征来表示几何形状
-```bash
-report_file 字符串 域和客户端的映射文件
-```
-执行脚本:
+
+---
+
+### ✅ 7. Geometric Direction
+
+From the perspective of the manifold space, cross-domain differences are caused by shifts in class distribution, but the geometric structure remains unchanged.  
+Thus, we can use the combined features from multiple domains to represent the geometric structure.
+
+#### Parameters
+
+| Parameter     | Type   | Description                     |
+| ------------- | ------ | ------------------------------- |
+| `report_file` | string | File mapping domains to clients |
+
+#### Run Script
+
 ```bash
 python 聚合协方差矩阵4x10=10.py
 ```
-运行结果:
+
+#### Output
+
 ```bash
 cov_matrix_output/class_{0~9}_cov_matrix.npy
 ```
-8.几何引导的数据增强
-现在我们已经得到了分布的几何方向和多个域对应的类原型，在客户端进行数据增强，客户端本域，进行单域数据增强策略，非本域，则以类原型为中心进行几何方向的增强，这样即使在客户端视角，也能学习到跨域的特征，从而有效的缓解域偏移带来的偏差
-执行脚本:
+
+---
+
+### ✅ 8. Geometry-Guided Data Augmentation
+
+We now have the geometric structure and class prototypes for multiple domains.  
+For data augmentation:
+
+- For samples within the same domain, apply domain-specific augmentation.
+- For samples outside the domain, augment based on class prototypes and geometric structure.
+
+This allows the client to learn cross-domain features even from its own perspective, thereby effectively mitigating the bias caused by domain shift.
+
+#### Run Script
+
 ```bash
 python 扩充-放大聚合协方差矩阵-类原型-类中心.py
 ```
-运行结果:
+
+#### Output
+
 ```bash
-argumented_clip_features/{域名称}/client_{域对应的客户端编号}_class_{0~9}/final_embeddings_filled.npy
-argumented_clip_features/{域名称}/client_{域对应的客户端编号}_class_{0~9}/labels_filled.npy
+argumented_clip_features/{domain_name}/client_{client_id}_class_{0~9}/final_embeddings_filled.npy
+argumented_clip_features/{domain_name}/client_{client_id}_class_{0~9}/labels_filled.npy
 ```
-9.不同联邦架构训练
-执行脚本:
+
+---
+
+### ✅ 9. Training Under Different Federated Architectures
+
+We train both the original and augmented models under different federated architectures to compare performance:
+
+#### Run Script
+
 ```bash
-python FedAvg联邦原始特征.py 
-python FedAvg联邦补全特征.py 
+python FedAvg联邦原始特征.py
+python FedAvg联邦补全特征.py
 python FedNTD联邦原始特征.py
 python FedNTD联邦补全特征.py
 python FedOpt联邦原始特征.py
@@ -402,236 +609,429 @@ python SCAFFOLD联邦原始特征.py
 python SCAFFOLD联邦补全特征.py
 ```
 
-PACS和office_caltech_10是小样本数据集和少分类任务
-少分类任务-分类难度低
-类间差异大-有利于区分
-小样本数据集中划分训练集测试集-训练集和测试集相似-隐式提高精度
-同域类划分相对平衡(因为是按比例随机划分，这是跨域划分的通病)
+---
 
-随着自监督学习的发展，面向以clip、dino为代表的Backbond时，PACS和office_caltech_10这类跨域数据集的挑战被大大的削弱，因此我们迫切的需要一种更符合现实场景且更具有挑战的数据集，因此我们提出了Office-Home-LDS，它在Office-Home数据集(65分类)的基础上融合了跨域和数据异质，显然，这更符合真实世界。
+## 🌍 PACS and Office-Caltech-10
 
-PACS:
-1.数据集介绍：
-PACS 数据集包含四个不同的域（domains）的数据，包含七个类别:Dog、Elephant、Giraffe、Guitar、Horse、House、Person
-(1): P（Photo）: 真实照片
-(2): A（Art Painting）: 艺术绘画
-(3): C（Cartoon）: 卡通
-(4): S（Sketch）: 素描
-2.数据集划分
-我们遵循联邦跨域以往的工作设置：一个客户端划分一个域，同时各客户端按照比例从训练集中随机划分,对于没有划分训练集和测试集的数据集，遵循以往工作的比例进行划分
-执行脚本:
+PACS and Office-Caltech-10 are small-sample datasets with fewer classification tasks:
+
+- ✅ Small sample size – Low classification difficulty.
+- ✅ High inter-class variation – Easier to distinguish between classes.
+- ✅ Similar training and test sets – Improves accuracy implicitly.
+- ✅ Balanced intra-domain classes – Following a proportional random split.
+
+With the development of self-supervised learning, the challenges posed by cross-domain datasets like PACS and Office_Caltech_10 have been significantly weakened when using backbones such as CLIP and DINO.
+
+Therefore, there is an urgent need for a more realistic and challenging dataset that better reflects real-world scenarios. To address this, we propose **Office-Home-LDS** — a dataset built upon the Office-Home dataset (65 classes) that incorporates both cross-domain and data heterogeneity. This clearly aligns better with real-world conditions.
+
+---
+
+## ✅ PACS
+
+### 🏷️ 1. Dataset Overview
+
+The PACS dataset contains data from four different domains, with seven categories:  
+**Dog**, **Elephant**, **Giraffe**, **Guitar**, **Horse**, **House**, **Person**
+
+- **P** (Photo) – 📷 Real-world photos
+- **A** (Art Painting) – 🎨 Artistic paintings
+- **C** (Cartoon) – 🐾 Cartoon images
+- **S** (Sketch) – ✍️ Sketches
+
+---
+
+### 📂 2. Dataset Partitioning
+
+Following standard cross-domain work:
+
+- Each client is assigned one domain.
+- Data is randomly partitioned based on a predefined ratio.
+
+#### Run Script
+
 ```bash
 python data_distribution_digits.py
 ```
-运行结果:
+
+#### Output
+
 ```bash
-./output_indices/{域名称}/train_train_indices.npy 该域数据集划分的训练集索引
-./output_indices/{域名称}/test_test_indices.npy 该域数据集划分的测试集索引
-./output_indices/{域名称}/client_{域对应的客户端编号}_indices.npy  该域内客户端划分的索引
-./output_indices/{域名称}/class_indices.npy  该域内各类的索引集合
-./output_indices/client_combined_class_distribution.txt  各域分配给对应客户端各类的数据分布
+./output_indices/{domain_name}/train_train_indices.npy          # Training set indices for the domain
+./output_indices/{domain_name}/test_test_indices.npy            # Test set indices for the domain
+./output_indices/{domain_name}/client_{client_id}_indices.npy   # Client-assigned indices for the domain
+./output_indices/{domain_name}/class_indices.npy                # Combined class indices within the domain
+./output_indices/client_combined_class_distribution.txt         # Class distribution per client within each domain
 ```
-3.交叉索引
-我们已经得到某域对应的客户端在该域划分的数据索引,以及该域的类别索引,通过交叉索引,我们可以得到该域对应客户端的各类的索引文件
-执行脚本:
+
+---
+
+### 🔁 3. Cross Indexing
+
+We have obtained the client indices and class indices for each domain.  
+By performing cross-indexing, we can generate class-specific indices for each client.
+
+#### Run Script
+
 ```bash
 python 交叉索引.py
 ```
-运行结果:
+
+#### Output
+
 ```bash
-output_client_class_indices/{域名称}/client_{域对应的客户端编号}_class_{0~6}_indices.npy
+output_client_class_indices/{domain_name}/client_{client_id}_class_{0~6}_indices.npy
 ```
-4.训练集特征提取
-我们已经得到了四个域对应的四个客户端下,,各个类的索引文件,使用CLIP作为Backbond,我们对索引文件逐个进行特征提取得到对应的特征文件和标签文件
-执行脚本:
+
+---
+
+### 🎯 4. Training Set Feature Extraction
+
+We have obtained class-specific index files for each client in the four domains.  
+Using **CLIP** as the backbone, we extract features for each index file and generate the corresponding feature and label files.
+
+#### Run Script
+
 ```bash
 python 训练集特征.py
 ```
-运行结果:
+
+#### Output
+
 ```bash
-clip_pacs_train_features/{域名称}/client_{域对应的客户端编号}_class_{0~6}_original_features.npy
-clip_pacs_train_features/{域名称}/client_{域对应的客户端编号}_class_{0~6}_labels.npy
+clip_pacs_train_features/{domain_name}/client_{client_id}_class_{0~6}_original_features.npy
+clip_pacs_train_features/{domain_name}/client_{client_id}_class_{0~6}_labels.npy
 ```
-5.测试集特征提取
-执行脚本:
+
+---
+
+### 🏆 5. Test Set Feature Extraction
+
+We extract features and labels for the test set using CLIP as the backbone.
+
+#### Run Script
+
 ```bash
 python 测试集特征.py
 ```
-运行结果:
+
+#### Output
+
 ```bash
-clip_test_features/{域名称}/{域名称}_test_features.npy
-clip_test_features/{域名称}/{域名称}_test_labels.npy
-```
-6.不同联邦架构训练
-执行脚本:
-```bash
-python FedAvg联邦原始特征.py 
-python FedNTD联邦原始特征.py
-python FedOpt联邦原始特征.py
-python FedProx联邦原始特征.py
-python MOON联邦原始特征.py
-python FedDyn联邦原始特征.py
-python FedProto联邦原始特征.py
-python SCAFFOLD联邦原始特征.py
+clip_test_features/{domain_name}/{domain_name}_test_features.npy
+clip_test_features/{domain_name}/{domain_name}_test_labels.npy
 ```
 
-office_caltech_10:
-1.数据集介绍：
-office_caltech_10 数据集包含四个不同的域（domains）的数据，包含十个类别:Backpack、Calculator、
-Headphones、Keyboard、Laptop、Monitor、Mouse、Mug、Projector、Bike
-(1): Amazon (A): 来自 Amazon 的商品图片
-(2): Webcam (W): 通过网络摄像头拍摄的图像
-(3): DSLR (D): 由数码单反相机拍摄的图像
-(4): Caltech-256 (C): 从 Caltech-256 数据集中选取的图像
-2.数据集划分
-我们遵循联邦跨域以往的工作设置：一个客户端划分一个域，同时各客户端按照比例从训练集中随机划分,对于没有划分训练集和测试集的数据集，遵循以往工作的比例进行划分
-执行脚本:
+---
+
+### 🏋️‍♂️ 6. Training Under Different Federated Architectures
+
+We train both the original and augmented models under different federated architectures to compare performance:
+
+#### Run Script
+
+```bash
+▶️ python FedAvg联邦原始特征.py
+▶️ python FedNTD联邦原始特征.py
+▶️ python FedOpt联邦原始特征.py
+▶️ python FedProx联邦原始特征.py
+▶️ python MOON联邦原始特征.py
+▶️ python FedDyn联邦原始特征.py
+▶️ python FedProto联邦原始特征.py
+▶️ python SCAFFOLD联邦原始特征.py
+```
+
+---
+
+## ✅ Office-Caltech-10
+
+### 🏷️ 1. Dataset Overview
+
+The Office-Caltech-10 dataset contains data from four different domains, representing 10 categories:  
+**Headphones**, **Keyboard**, **Laptop**, **Monitor**, **Mouse**, **Mug**, **Projector**, **Bike**
+
+- **A** (Amazon) – 🛒 Product images from Amazon
+- **W** (Webcam) – 📷 Images captured from a webcam
+- **D** (DSLR) – 📸 Images captured from a DSLR camera
+- **C** (Caltech-256) – 🎯 Selected images from the Caltech-256 dataset
+
+---
+
+### 📂 2. Dataset Partitioning
+
+Following standard federated cross-domain work:
+
+- Each client is assigned one domain.
+- Data is randomly partitioned based on a predefined ratio.
+- For datasets without explicit training and test splits, we follow the ratio used in prior work.
+
+#### Run Script
+
 ```bash
 python data_distribution_office_caltech_10.py
 ```
-运行结果:
+
+#### Output
+
 ```bash
-output_indices/{域名称}/train_train_indices.npy 该域数据集划分的训练集索引
-output_indices/{域名称}/test_test_indices.npy 域数据集划分的测试集索引
-output_indices/{域名称}/client_{域对应的客户端编号}_indices.npy  该域内客户端划分的索引
-output_indices/{域名称}/class_indices.npy  该域内各类的索引集合
-output_indices/client_combined_class_distribution.txt  各域分配给对应客户端各类的数据分布
+output_indices/{domain_name}/train_train_indices.npy         # Training set indices for the domain
+output_indices/{domain_name}/test_test_indices.npy           # Test set indices for the domain
+output_indices/{domain_name}/client_{client_id}_indices.npy  # Client-assigned indices for the domain
+output_indices/{domain_name}/class_indices.npy               # Combined class indices within the domain
+output_indices/client_combined_class_distribution.txt        # Class distribution per client within each domain
 ```
-3.交叉索引
-我们已经得到某域对应的客户端在该域划分的数据索引,以及该域的类别索引,通过交叉索引,我们可以得到该域对应客户端的各类的索引文件
-执行脚本:
+
+---
+
+### 🔁 3. Cross Indexing
+
+We have obtained client indices and class indices for each domain.  
+By performing cross-indexing, we can generate class-specific indices for each client.
+
+#### Run Script
+
 ```bash
 python 交叉索引.py
 ```
-运行结果:
+
+#### Output
+
 ```bash
-output_client_class_indices/{域名称}/client_{域对应的客户端编号}_class_{0~9}_indices.npy
+output_client_class_indices/{domain_name}/client_{client_id}_class_{0~64}_indices.npy
 ```
-4.训练集特征提取
-我们已经得到了四个域对应的四个客户端下,,各个类的索引文件,使用CLIP作为Backbond,我们对索引文件逐个进行特征提取得到对应的特征文件和标签文件
-执行脚本:
+
+---
+
+### 🎯 4. Training Set Feature Extraction
+
+We have obtained class-specific index files for each client in the four domains.  
+Using **CLIP** as the backbone, we extract features for each index file and generate the corresponding feature and label files.
+
+#### Run Script
+
 ```bash
 python 训练集特征.py
 ```
-运行结果:
+
+#### Output
+
 ```bash
-clip_pacs_train_features/{域名称}/client_{域对应的客户端编号}_class_{0~9}_original_features.npy
-clip_pacs_train_features/{域名称}/client_{域对应的客户端编号}_class_{0~9}_labels.npy
+clip_office_home_train_features/{domain_name}/client_{client_id}_class_{0~64}_original_features.npy
+clip_office_home_train_features/{domain_name}/client_{client_id}_class_{0~64}_labels.npy
 ```
-5.测试集特征提取
-执行脚本:
+
+---
+
+### 🏆 5. Test Set Feature Extraction
+
+We extract features and labels for the test set using CLIP as the backbone.
+
+#### Run Script
+
 ```bash
 python 测试集特征.py
 ```
-运行结果:
+
+#### Output
+
 ```bash
-clip_test_features/{域名称}/{域名称}_test_features.npy
-clip_test_features/{域名称}/{域名称}_test_labels.npy
-```
-6.不同联邦架构训练
-执行脚本:
-```bash
-python FedAvg联邦原始特征.py 
-python FedNTD联邦原始特征.py
-python FedOpt联邦原始特征.py
-python FedProx联邦原始特征.py
-python MOON联邦原始特征.py
-python FedDyn联邦原始特征.py
-python FedProto联邦原始特征.py
-python SCAFFOLD联邦原始特征.py
+clip_test_features/{domain_name}/{domain_name}_test_features.npy
+clip_test_features/{domain_name}/{domain_name}_test_labels.npy
 ```
 
-Office-Home-LDS:
-1.数据集介绍：
-Office-Home-LDS 数据集包含四个不同的域（domains）的数据，有65个类别
-(1): Art： 手绘、素描或油画风格的图像
-(2): Clipart： 来自网络的卡通和剪贴画图像
-(3): Product：	产品图片或商品展示图
-(4): Real World： 现实场景中拍摄的图像
-2.数据集划分
-我们遵循联邦跨域以往的工作设置：一个客户端划分一个域，同时各客户端按照狄利克雷矩阵中的比例从训练集中随机划分,对于没有划分训练集和测试集的数据集，遵循以往工作的比例进行划分
-执行脚本:
+---
+
+### 🏋️‍♂️ 6. Training Under Different Federated Architectures
+
+We train both the original and augmented models under different federated architectures to compare performance:
+
+##### Run Script
+
+```bash
+▶️ python FedAvg联邦原始特征.py
+▶️ python FedNTD联邦原始特征.py
+▶️ python FedOpt联邦原始特征.py
+▶️ python FedProx联邦原始特征.py
+▶️ python MOON联邦原始特征.py
+▶️ python FedDyn联邦原始特征.py
+▶️ python FedProto联邦原始特征.py
+▶️ python SCAFFOLD联邦原始特征.py
+```
+
+---
+
+## ✅ Office-Home-LDS
+
+### 🏷️ 1. Dataset Overview
+
+The **Office-Home-LDS** dataset contains data from four different domains, covering **65 categories**:
+
+- **Art** – 🎨 Hand-drawn, sketch, or oil painting-style images
+- **Clipart** – 🖼️ Cartoon and clipart images from the web
+- **Product** – 🛒 Product or merchandise display images
+- **Real World** – 🌍 Photographs captured from real-world scenarios
+
+---
+
+### 📂 2. Dataset Partitioning
+
+Following standard federated cross-domain work:
+
+- Each client is assigned one domain.
+- Data is randomly partitioned based on the Dirichlet distribution within the training set.
+- For datasets without explicit training and test splits, we follow the ratio used in prior work.
+
+#### Run Script
+
 ```bash
 python data_distribution_Office_Home_LDS.py
 ```
-运行结果:
+
+#### Output
+
 ```bash
-./output_indices/{域名称}/train_train_indices.npy 该域数据集划分的训练集索引
-./output_indices/{域名称}/test_test_indices.npy 该域数据集划分的测试集索引
-./output_indices/{域名称}/client_{域对应的客户端编号}_indices.npy 该域内客户端划分的索引
-./output_indices/{域名称}/class_indices.npy 该域内各类的索引集合
-./output_indices/client_combined_class_distribution.txt 各域分配给对应客户端各类的数据分布
+./output_indices/{domain_name}/train_train_indices.npy         # Training set indices for the domain
+./output_indices/{domain_name}/test_test_indices.npy           # Test set indices for the domain
+./output_indices/{domain_name}/client_{client_id}_indices.npy  # Client-assigned indices for the domain
+./output_indices/{domain_name}/class_indices.npy               # Combined class indices within the domain
+./output_indices/client_combined_class_distribution.txt        # Class distribution per client within each domain
 ```
-3.交叉索引
-我们已经得到某域对应的客户端在该域划分的数据索引,以及该域的类别索引,通过交叉索引,我们可以得到该域对应客户端的各类的索引文件
-执行脚本:
+
+---
+
+### 🔁 3. Cross Indexing
+
+We have obtained client indices and class indices for each domain.  
+By performing cross-indexing, we can generate class-specific indices for each client.
+
+#### Run Script
+
 ```bash
 python 交叉索引.py
 ```
-运行结果:
+
+#### Output
+
 ```bash
-output_client_class_indices/{域名称}/client_{域对应的客户端编号}_class_{0~64}_indices.npy
+output_client_class_indices/{domain_name}/client_{client_id}_class_{0~64}_indices.npy
 ```
-4.训练集特征提取
-我们已经得到了四个域对应的四个客户端下,,各个类的索引文件,使用CLIP作为Backbond,我们对索引文件逐个进行特征提取得到对应的特征文件和标签文件
-执行脚本:
+
+---
+
+### 🎯 4. Training Set Feature Extraction
+
+We have obtained class-specific index files for each client in the four domains.  
+Using **CLIP** as the backbone, we extract features for each index file and generate the corresponding feature and label files.
+
+#### Run Script
+
 ```bash
 python 训练集特征.py
 ```
-运行结果:
+
+#### Output
+
 ```bash
-clip_office_home_train_features/{域名称}/client_{域对应的客户端编号}_class_{0~64}_original_features.npy
-clip_office_home_train_features/{域名称}/client_{域对应的客户端编号}_class_{0~64}_labels.npy
+clip_office_home_train_features/{domain_name}/client_{client_id}_class_{0~64}_original_features.npy
+clip_office_home_train_features/{domain_name}/client_{client_id}_class_{0~64}_labels.npy
 ```
-5.测试集特征提取
-执行脚本:
+
+---
+
+### 🏆 5. Test Set Feature Extraction
+
+We extract features and labels for the test set using CLIP as the backbone.
+
+#### Run Script
+
 ```bash
 python 测试集特征.py
 ```
-运行结果:
+
+#### Output
+
 ```bash
-clip_test_features/{域名称}/{域名称}_test_features.npy
-clip_test_features/{域名称}/{域名称}_test_labels.npy
+clip_test_features/{domain_name}/{domain_name}_test_features.npy
+clip_test_features/{domain_name}/{domain_name}_test_labels.npy
 ```
-6.提取原型
-通过前面得到的客户端类别索引文件，可以提取对应的类原型
-执行脚本:
+
+---
+
+### 🔍 6. Prototype Extraction
+
+Using the client-class index files obtained earlier, we extract class prototypes for each client.
+
+#### Run Script
+
 ```bash
 python 提取原型.py
 ```
-运行结果:
+
+#### Output
+
 ```bash
-./office_home_prototypes/{域名称}/client_{域对应的客户端编号}_class_{0~64}_prototype.npy
+./office_home_prototypes/{domain_name}/client_{client_id}_class_{0~64}_prototype.npy
 ```
-7.几何方向
-在流形空间的视角，跨域的本质是类对应的流形分布发生横向的偏移，几何方向并没有变化，因此我们可以利用多域的合并特征来表示几何形状
-```bash
-report_file 字符串 域和客户端的映射文件
-```
-执行脚本:
+
+---
+
+### 🔬 7. Geometric Direction
+
+From the perspective of the manifold space, cross-domain differences are caused by shifts in class distribution, but the geometric structure remains unchanged.  
+Thus, we can use the combined features from multiple domains to represent the geometric structure.
+
+#### Parameters
+
+| Parameter     | Type   | Description                     |
+| ------------- | ------ | ------------------------------- |
+| `report_file` | string | File mapping domains to clients |
+
+#### Run Script
+
 ```bash
 python 聚合协方差矩阵4x65=65.py
 ```
-运行结果:
+
+#### Output
+
 ```bash
 cov_matrix_output/class_{0~64}_cov_matrix.npy
 ```
-8.几何引导的数据增强
-现在我们已经得到了分布的几何方向和多个域对应的类原型，在客户端进行数据增强，客户端本域，进行单域数据增强策略，非本域，则以类原型为中心进行几何方向的增强，这样即使在客户端视角，也能学习到跨域的特征，从而有效的缓解域偏移带来的偏差
-执行脚本:
+
+---
+
+### 🏗️ 8. Geometry-Guided Data Augmentation
+
+We now have the geometric direction and class prototypes for multiple domains.  
+For data augmentation:
+
+- For samples within the same domain, apply a single-domain augmentation strategy.
+- For samples outside the domain, augment based on class prototypes and geometric directions.
+- This allows the client to learn cross-domain features and mitigate domain shift effectively.
+
+#### Run Script
+
 ```bash
 python 扩充-放大聚合协方差矩阵-类原型-类中心-封顶.py.py
 ```
-运行结果:
+
+#### Output
+
 ```bash
-argumented_clip_features/{域名称}/client_{域对应的客户端编号}_class_{0~64}/final_embeddings_filled.npy
-argumented_clip_features/{域名称}/client_{域对应的客户端编号}_class_{0~64}/labels_filled.npy
+argumented_clip_features/{domain_name}/client_{client_id}_class_{0~64}/final_embeddings_filled.npy
+argumented_clip_features/{domain_name}/client_{client_id}_class_{0~64}/labels_filled.npy
 ```
-9.不同联邦架构训练
-执行脚本:
+
+---
+
+### 🏋️‍♂️ 9. Training Under Different Federated Architectures
+
+We train both the original and augmented models under different federated architectures to compare performance:
+
+#### Run Script
+
 ```bash
-python FedAvg联邦原始特征.py 
-python FedAvg联邦补全特征.py 
+python FedAvg联邦原始特征.py
+python FedAvg联邦补全特征.py
 python FedNTD联邦原始特征.py
 python FedNTD联邦补全特征.py
 python FedOpt联邦原始特征.py
@@ -647,49 +1047,45 @@ python FedProto联邦补全特征.py
 python SCAFFOLD联邦原始特征.py
 python SCAFFOLD联邦补全特征.py
 ```
+
+---
+
 ## Learning Trajectory (Updating...)
 
 When I completed this project, I was a third-year undergraduate student. 🌿 I will share my learning trajectory and how to efficiently and comprehensively develop expertise in a specific field. 🌊 I believe that the most effective approach is to start by identifying high-quality review articles from top-tier journals. 📚 After forming a comprehensive understanding of the field, I recommend selecting detailed papers from the references cited in these outstanding reviews, focusing on those that align with the direction of our current work for in-depth study. 🔍 This process resembles a leaf with its veins hollowed out — our process of understanding is akin to a flood flowing through the leaf, with the central vein serving as the core from which knowledge selectively branches out in all directions. 🚀
 
-+ **2023Tpami**  "Deep Long-Tailed Learning: A Survey"[Paper](https://arxiv.org/pdf/2304.00685)——Review on Long-Tailed Learning 
+- **2023Tpami** "Deep Long-Tailed Learning: A Survey"[Paper](https://arxiv.org/pdf/2304.00685)——Review on Long-Tailed Learning
 
-+ **2024Tpami** "Vision-Language Models for Vision Tasks: A Survey" [Paper](https://arxiv.org/pdf/2304.00685) & [Github](https://github.com/jingyi0000/VLM_survey)——Review on Vision-Language Large Models
+- **2024Tpami** "Vision-Language Models for Vision Tasks: A Survey" [Paper](https://arxiv.org/pdf/2304.00685) & [Github](https://github.com/jingyi0000/VLM_survey)——Review on Vision-Language Large Models
 
-+ **2024Tpami**  "Federated Learning for Generalization, Robustness, Fairness: A Survey and Benchmark" [Paper](https://arxiv.org/pdf/2311.06750) & [Github](https://github.com/WenkeHuang/MarsFL)——Review on Federated Learning
+- **2024Tpami** "Federated Learning for Generalization, Robustness, Fairness: A Survey and Benchmark" [Paper](https://arxiv.org/pdf/2311.06750) & [Github](https://github.com/WenkeHuang/MarsFL)——Review on Federated Learning
 
-+ **2021CVPR**  "Model-Contrastive Federated Learning" [Paper](https://arxiv.org/pdf/2103.16257) & [Github](https://github.com/QinbinLi/MOON)——MOON(Alignment of Local and Global Model Representations)
+- **2021CVPR** "Model-Contrastive Federated Learning" [Paper](https://arxiv.org/pdf/2103.16257) & [Github](https://github.com/QinbinLi/MOON)——MOON(Alignment of Local and Global Model Representations)
 
-+ **2022AAAI** "FedProto: Federated Prototype Learning across Heterogeneous Clients"[Paper](https://arxiv.org/pdf/2105.00243)——FedProto(Alignment of Local and Global Prototype Representations)
+- **2022AAAI** "FedProto: Federated Prototype Learning across Heterogeneous Clients"[Paper](https://arxiv.org/pdf/2105.00243)——FedProto(Alignment of Local and Global Prototype Representations)
 
-+ **2023FGCS** "FedProc: Prototypical contrastive federated learning on non-IID data" [Paper](https://arxiv.org/pdf/2109.12273)——FedProc(Alignment of Local and Global Prototype Representations)
-  
-+ **2020ICML** "SCAFFOLD:Stochastic Controlled Averaging for Federated Learning"[Paper](https://arxiv.org/pdf/1910.06378)——SCAFFOLD(Alignment of Local and Global Optimization Directions)
-  
-+ **2021ICLR** "FEDERATED LEARNING BASED ON DYNAMIC REGULARIZATION"[Paper](https://arxiv.org/pdf/2111.04263)——FedDyn(Alignment of Local and Global Losses)
+- **2023FGCS** "FedProc: Prototypical contrastive federated learning on non-IID data" [Paper](https://arxiv.org/pdf/2109.12273)——FedProc(Alignment of Local and Global Prototype Representations)
+- **2020ICML** "SCAFFOLD:Stochastic Controlled Averaging for Federated Learning"[Paper](https://arxiv.org/pdf/1910.06378)——SCAFFOLD(Alignment of Local and Global Optimization Directions)
+- **2021ICLR** "FEDERATED LEARNING BASED ON DYNAMIC REGULARIZATION"[Paper](https://arxiv.org/pdf/2111.04263)——FedDyn(Alignment of Local and Global Losses)
 
-+ **2022NeurIPS** "Preservation of the Global Knowledge by Not-True Distillation in Federated Learning" [Paper](https://arxiv.org/pdf/2106.03097 )——FedNTD(Alignment of Unseen Local Losses with Global Losses)
+- **2022NeurIPS** "Preservation of the Global Knowledge by Not-True Distillation in Federated Learning" [Paper](https://arxiv.org/pdf/2106.03097)——FedNTD(Alignment of Unseen Local Losses with Global Losses)
 
-+  **2021ICLR** "ADAPTIVE FEDERATED OPTIMIZATION"[Paper](https://arxiv.org/pdf/2003.00295)——FedOpt(Server-Side Aggregation Optimization)
+- **2021ICLR** "ADAPTIVE FEDERATED OPTIMIZATION"[Paper](https://arxiv.org/pdf/2003.00295)——FedOpt(Server-Side Aggregation Optimization)
 
-+ **2024CVPR**  "Fair Federated Learning under Domain Skew with Local Consistency and Domain Diversity"[Paper](https://arxiv.org/pdf/2405.16585) & [Github](https://github.com/yuhangchen0/FedHEAL)——FedHEAL(Alignment of Local and Global Model Representations)
+- **2024CVPR** "Fair Federated Learning under Domain Skew with Local Consistency and Domain Diversity"[Paper](https://arxiv.org/pdf/2405.16585) & [Github](https://github.com/yuhangchen0/FedHEAL)——FedHEAL(Alignment of Local and Global Model Representations)
 
-+ **2023WACV**  "Federated Domain Generalization for Image Recognition via Cross-Client Style Transfer"[Paper](https://arxiv.org/pdf/2210.00912) & [Github](https://chenjunming.ml/proj/CCST)——CCST(Alignment of Local and Global Optimization Directions)
+- **2023WACV** "Federated Domain Generalization for Image Recognition via Cross-Client Style Transfer"[Paper](https://arxiv.org/pdf/2210.00912) & [Github](https://chenjunming.ml/proj/CCST)——CCST(Alignment of Local and Global Optimization Directions)
 
-+ **2023TMC**  "FedFA: Federated Learning with Feature Anchors to Align Features and Classifiers for Heterogeneous Data"[Paper](https://arxiv.org/pdf/2211.09299)——FedFA(Alignment of Features and Classifiers)
+- **2023TMC** "FedFA: Federated Learning with Feature Anchors to Align Features and Classifiers for Heterogeneous Data"[Paper](https://arxiv.org/pdf/2211.09299)——FedFA(Alignment of Features and Classifiers)
 
-+ **2024AAAI** "CLIP-Guided Federated Learning on Heterogeneous and Long-Tailed Data"[Paper](https://arxiv.org/pdf/2312.08648)——CLIP As Backbond For FL
+- **2024AAAI** "CLIP-Guided Federated Learning on Heterogeneous and Long-Tailed Data"[Paper](https://arxiv.org/pdf/2312.08648)——CLIP As Backbond For FL
 
-+ **2023CVPR** "Rethinking Federated Learning with Domain Shift: A Prototype View"[Paper](https://openaccess.thecvf.com/content/CVPR2023/papers/Huang_Rethinking_Federated_Learning_With_Domain_Shift_A_Prototype_View_CVPR_2023_paper.pdf) & [Github](https://github.com/WenkeHuang/RethinkFL/tree/main)——Cross-Domain Prototype Loss Alignment
+- **2023CVPR** "Rethinking Federated Learning with Domain Shift: A Prototype View"[Paper](https://openaccess.thecvf.com/content/CVPR2023/papers/Huang_Rethinking_Federated_Learning_With_Domain_Shift_A_Prototype_View_CVPR_2023_paper.pdf) & [Github](https://github.com/WenkeHuang/RethinkFL/tree/main)——Cross-Domain Prototype Loss Alignment
 
-+ **2023ICLR** "FEDFA: FEDERATED FEATURE AUGMENTATION" [Paper](https://arxiv.org/pdf/2301.12995) & [Github](https://github.com/tfzhou/FedFA)——Class Prototype Gaussian Enhancement
+- **2023ICLR** "FEDFA: FEDERATED FEATURE AUGMENTATION" [Paper](https://arxiv.org/pdf/2301.12995) & [Github](https://github.com/tfzhou/FedFA)——Class Prototype Gaussian Enhancement
 
-+ **2021ICLR** "FEDMIX: APPROXIMATION OF MIXUP UNDER MEAN AUGMENTED FEDERATED LEARNING" [Paper](https://arxiv.org/pdf/2107.00233)——Mixup For FL
+- **2021ICLR** "FEDMIX: APPROXIMATION OF MIXUP UNDER MEAN AUGMENTED FEDERATED LEARNING" [Paper](https://arxiv.org/pdf/2107.00233)——Mixup For FL
 
-+ **2021PMLR** "Data-Free Knowledge Distillation for Heterogeneous Federated Learning"  [Paper](https://arxiv.org/pdf/2105.10056)——Data-Free Knowledge Distillation For FL
+- **2021PMLR** "Data-Free Knowledge Distillation for Heterogeneous Federated Learning" [Paper](https://arxiv.org/pdf/2105.10056)——Data-Free Knowledge Distillation For FL
 
-+ **2017ICML** "Communication-Efficient Learning of Deep Networks from Decentralized Data" [Paper](https://arxiv.org/pdf/1602.05629)——FedAvg(Average aggregation)
-
-
-
-
-
+- **2017ICML** "Communication-Efficient Learning of Deep Networks from Decentralized Data" [Paper](https://arxiv.org/pdf/1602.05629)——FedAvg(Average aggregation)
