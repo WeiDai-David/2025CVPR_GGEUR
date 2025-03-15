@@ -17,7 +17,7 @@
 
 # 📝 Abstract
 
-Data heterogeneity in federated learning, characterized by a significant misalignment between local and global distributions, leads to divergent local optimization directions and hinders global model training.Existing studies mainly focus on optimizing local updates or global aggregation, but these indirect approaches demonstrate instability when handling highly heterogeneous data distributions, especially in scenarios where label skew and domain skew coexist.To address this, we propose a geometry-guided data generation method that centers on simulating the global embedding distribution locally. We first introduce the concept of the geometric shape of an embedding distribution and then address the challenge of obtaining global geometric shapes under privacy constraints. Subsequently, we propose GGEUR, which leverages global geometric shapes to guide the generation of new samples, enabling a closer approximation to the ideal global distribution.In single-domain scenarios, we augment samples based on global geometric shapes to enhance model generalization;in multi-domain scenarios, we further employ class prototypes to simulate the global distribution across domains.Extensive experimental results demonstrate that our method significantly enhances the performance of existing approaches in handling highly heterogeneous data, including scenarios with label skew, domain skew, and their coexistence.
+Data heterogeneity in federated learning, characterized by a significant misalignment between local and global distributions, leads to divergent local optimization directions and hinders global model training.Existing studies mainly focus on optimizing local updates or global aggregation, but these indirect approaches demonstrate instability when handling highly heterogeneous data distributions, especially in scenarios where label skew and domain skew coexist.To address this, we propose a geometry-guided data generation method that centers on simulating the global embedding distribution locally. We first introduce the concept of the geometric shape of an embedding distribution and then address the challenge of obtaining global geometric shapes under privacy constraints. Subsequently, we propose GGEUR, which leverages global geometric shapes to guide the generation of new samples, enabling a closer approximation to the ideal global distribution.In single-domain scenarios, we augment samples based on global geometric shapes to enhance model generalization;in multi-domain scenarios, we further employ class prototypes to simulate the global distribution across domains.Extensive experimental results demonstrate that our method significantly enhances the performance of existing approaches in handling highly heterogeneous data, including scenarios with label skew, domain skew, and their coexistence. **Paper:** [🔗 Arxiv](https://arxiv.org/pdf/2503.06457)
 
 <!-- --- -->
 
@@ -406,7 +406,11 @@ python FL_MLP_200.py  # Train on TinyImageNet dataset
 # 🚀  Cross-Domain Scenarios
 
 We conducted experiments on the **Digits**, **PACS**, and **Office-Caltech-10** datasets, and proposed a new dataset called **Office-Home-LDS**.<br>
-In cross domain scenarios, we follow the previous work setup of dividing one domain into one client.
+Following standard cross-domain work:
+
+- Each domain is assigned one client.
+- Data is randomly partitioned based on ratio used in prior work.
+- For datasets without explicit training and test splits, we follow the ratio used in prior work.
 
 ---
 
@@ -427,8 +431,9 @@ The **Digits** dataset contains data from four different domains, representing d
 
 Following the standard settings for federated cross-domain work:
 
-- Each client is assigned one domain.
-- Within each domain, data is randomly partitioned based on a predefined ratio.
+- Each domain is assigned one client.
+- Data is randomly partitioned based on ratio used in prior work.
+- For datasets without explicit training and test splits, we follow the ratio used in prior work.
 
 #### Run Script
 
@@ -645,8 +650,9 @@ The PACS dataset contains data from four different domains, with seven categorie
 
 Following standard cross-domain work:
 
-- Each client is assigned one domain.
-- Data is randomly partitioned based on a predefined ratio.
+- Each domain is assigned one client.
+- Data is randomly partitioned based on ratio used in prior work.
+- For datasets without explicit training and test splits, we follow the ratio used in prior work.
 
 #### Run Script
 
@@ -674,7 +680,7 @@ By performing cross-indexing, we can generate class-specific indices for each cl
 #### Run Script
 
 ```bash
-python 交叉索引.py
+python client_class_cross_index.py
 ```
 
 #### Output
@@ -693,7 +699,7 @@ Using **CLIP** as the backbone, we extract features for each index file and gene
 #### Run Script
 
 ```bash
-python 训练集特征.py
+python train_client_class_clip_features2tensor.py
 ```
 
 #### Output
@@ -712,7 +718,7 @@ We extract features and labels for the test set using CLIP as the backbone.
 #### Run Script
 
 ```bash
-python 测试集特征.py
+python test_clip_features2tensor.py
 ```
 
 #### Output
@@ -731,14 +737,14 @@ We train both the original and augmented models under different federated archit
 #### Run Script
 
 ```bash
-▶️ python FedAvg联邦原始特征.py
-▶️ python FedNTD联邦原始特征.py
-▶️ python FedOpt联邦原始特征.py
-▶️ python FedProx联邦原始特征.py
-▶️ python MOON联邦原始特征.py
-▶️ python FedDyn联邦原始特征.py
-▶️ python FedProto联邦原始特征.py
-▶️ python SCAFFOLD联邦原始特征.py
+python FedAvg.py
+python FedNTD.py
+python FedOpt.py
+python FedProx.py
+python MOON.py
+python FedDyn.py
+python FedProto.py
+python SCAFFOLD.py
 ```
 
 ---
@@ -761,7 +767,7 @@ The Office-Caltech-10 dataset contains data from four different domains, represe
 
 Following standard federated cross-domain work:
 
-- Each client is assigned one domain.
+- Each domain is assigned one client.
 - Data is randomly partitioned based on a predefined ratio.
 - For datasets without explicit training and test splits, we follow the ratio used in prior work.
 
@@ -791,7 +797,7 @@ By performing cross-indexing, we can generate class-specific indices for each cl
 #### Run Script
 
 ```bash
-python 交叉索引.py
+python client_class_cross_index.py
 ```
 
 #### Output
@@ -810,7 +816,7 @@ Using **CLIP** as the backbone, we extract features for each index file and gene
 #### Run Script
 
 ```bash
-python 训练集特征.py
+python train_client_class_clip_features2tensor.py
 ```
 
 #### Output
@@ -829,7 +835,7 @@ We extract features and labels for the test set using CLIP as the backbone.
 #### Run Script
 
 ```bash
-python 测试集特征.py
+python test_clip_features2tensor.py
 ```
 
 #### Output
@@ -848,14 +854,14 @@ We train both the original and augmented models under different federated archit
 ##### Run Script
 
 ```bash
-▶️ python FedAvg联邦原始特征.py
-▶️ python FedNTD联邦原始特征.py
-▶️ python FedOpt联邦原始特征.py
-▶️ python FedProx联邦原始特征.py
-▶️ python MOON联邦原始特征.py
-▶️ python FedDyn联邦原始特征.py
-▶️ python FedProto联邦原始特征.py
-▶️ python SCAFFOLD联邦原始特征.py
+python FedAvg.py
+python FedNTD.py
+python FedOpt.py
+python FedProx.py
+python MOON.py
+python FedDyn.py
+python FedProto.py
+python SCAFFOLD联.py
 ```
 
 ---
@@ -907,7 +913,7 @@ By performing cross-indexing, we can generate class-specific indices for each cl
 #### Run Script
 
 ```bash
-python 交叉索引.py
+python client_class_cross_index.py
 ```
 
 #### Output
@@ -926,7 +932,7 @@ Using **CLIP** as the backbone, we extract features for each index file and gene
 #### Run Script
 
 ```bash
-python 训练集特征.py
+python train_client_class_clip_features2tensor.py
 ```
 
 #### Output
@@ -945,7 +951,7 @@ We extract features and labels for the test set using CLIP as the backbone.
 #### Run Script
 
 ```bash
-python 测试集特征.py
+python test_clip_features2tensor.py
 ```
 
 #### Output
@@ -964,7 +970,7 @@ Using the client-class index files obtained earlier, we extract class prototypes
 #### Run Script
 
 ```bash
-python 提取原型.py
+python prototype_clip_features2tensor.py
 ```
 
 #### Output
@@ -989,7 +995,7 @@ Thus, we can use the combined features from multiple domains to represent the ge
 #### Run Script
 
 ```bash
-python 聚合协方差矩阵4x65=65.py
+python clip_tensor2aggregate_covariance_matrix.py
 ```
 
 #### Output
@@ -1012,7 +1018,7 @@ For data augmentation:
 #### Run Script
 
 ```bash
-python 扩充-放大聚合协方差矩阵-类原型-类中心-封顶.py.py
+python prototype_cov_matrix_generate_features.py
 ```
 
 #### Output
@@ -1031,22 +1037,22 @@ We train both the original and augmented models under different federated archit
 #### Run Script
 
 ```bash
-python FedAvg联邦原始特征.py
-python FedAvg联邦补全特征.py
-python FedNTD联邦原始特征.py
-python FedNTD联邦补全特征.py
-python FedOpt联邦原始特征.py
-python FedOpt联邦补全特征.py
-python FedProx联邦原始特征.py
-python FedProx联邦补全特征.py
-python MOON联邦原始特征.py
-python MOON联邦补全特征.py
-python FedDyn联邦原始特征.py
-python FedDyn联邦补全特征.py
-python FedProto联邦原始特征.py
-python FedProto联邦补全特征.py
-python SCAFFOLD联邦原始特征.py
-python SCAFFOLD联邦补全特征.py
+python FedAvg.py
+python FedAvg_GGEUR.py
+python FedNTD.py
+python FedNTD_GGEUR.py
+python FedOpt.py
+python FedOpt_GGEUR.py
+python FedProx.py
+python FedProx_GGEUR.py
+python MOON.py
+python MOON_GGEUR.py
+python FedDyn.py
+python FedDyn_GGEUR.py
+python FedProto.py
+python FedProto_GGEUR.py
+python SCAFFOLD.py
+python SCAFFOLD_GGEUR.py
 ```
 
 ---
