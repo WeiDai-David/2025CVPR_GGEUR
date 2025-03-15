@@ -5,7 +5,7 @@
 
 关键词：联邦学习、数据异质、域泛化、感知流形 -->
 
-# 2025CVPR_GGEUR
+# Geometric Knowledge-Guided Localized Global Distribution Alignment for Federated Learning
 
 <!-- **项目整理中 待完成的工作 7/3/2025**：
 
