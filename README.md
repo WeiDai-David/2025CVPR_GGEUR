@@ -1126,6 +1126,7 @@ If you find our work useful, please cite it using the following BibTeX format:
   note={Accepted}
 }
 ``` -->
+```bibtex
 @article{ma2025geometric,
   title={Geometric Knowledge-Guided Localized Global Distribution Alignment for Federated Learning},
   author={Ma, Yanbiao and Dai, Wei and Huang, Wenke and Chen, Jiayi},
@@ -1133,7 +1134,7 @@ If you find our work useful, please cite it using the following BibTeX format:
   year={2025},
   url={https://arxiv.org/pdf/2503.06457}
 }
-
+```
 
 ## 📧 Contact 
 **For any questions or help, feel welcome to write an email to <br> 22012100039@stu.xidian.edu.cn or wdai@stu.xidian.edu.cn**
