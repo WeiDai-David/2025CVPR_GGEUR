@@ -1109,11 +1109,15 @@ When I completed this project, I was a third-year undergraduate student. 🌿 I 
 
 - **2017ICML** "Communication-Efficient Learning of Deep Networks from Decentralized Data" [Paper](https://arxiv.org/pdf/1602.05629)——FedAvg(Average aggregation)
 
+- **2025ICLR** "Pursuing Better Decision Boundaries for Long-Tailed Object Detection via Category Information Amount" [Paper](https://arxiv.org/pdf/2502.03852)——IGAM Loss(Revise decision boundaries)
+
+- **2025Entropy** "Trade-Offs Between Richness and Bias of Augmented Data in Long-Tailed Recognition" [Paper](https://www.mdpi.com/1099-4300/27/2/201)——EIG(Effectiveness of distributed gain)
+
 ---
 
 ## 💡 Citation  
 If you find our work useful, please cite it using the following BibTeX format:  
-```bibtex
+<!-- ```bibtex
 @inproceedings{ma2025geometric,
   title={Geometric Knowledge-Guided Localized Global Distribution Alignment for Federated Learning},
   author={Ma, Yanbiao and Dai, Wei and Huang, Wenke and Chen, Jiayi},
@@ -1121,7 +1125,15 @@ If you find our work useful, please cite it using the following BibTeX format:
   year={2025},
   note={Accepted}
 }
-```
+``` -->
+@article{ma2025geometric,
+  title={Geometric Knowledge-Guided Localized Global Distribution Alignment for Federated Learning},
+  author={Ma, Yanbiao and Dai, Wei and Huang, Wenke and Chen, Jiayi},
+  journal={arXiv preprint arXiv:2503.06457},
+  year={2025},
+  url={https://arxiv.org/pdf/2503.06457}
+}
+
 
 ## 📧 Contact 
 **For any questions or help, feel welcome to write an email to <br> 22012100039@stu.xidian.edu.cn or wdai@stu.xidian.edu.cn**
