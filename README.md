@@ -3,13 +3,13 @@
 
 摘要：联邦学习中的数据异质性，其特征在于局部和全局分布之间的显著不一致，导致局部优化方向不同，并阻碍全局模型训练。现有的研究主要集中在优化本地更新或全局聚合，但这些间接方法在处理高度异构的数据分布时表现出不稳定性，特别是在标签偏斜和域偏斜共存的情况下。为了解决这个问题，我们提出了一种几何引导的数据增强方法，该方法侧重于在局部模拟全局嵌入分布。我们首先引入了嵌入分布几何形状的概念，并在隐私约束下解决了获取全局几何形状的挑战。随后，我们提出了GGEUR，它利用全局几何形状来引导新样本的生成，从而实现对理想全局分布更好的近似。在单域的情况下，我们通过基于全局几何形状的样本增强来提高模型泛化能力；在多域的情况下，我们进一步采用类原型来模拟跨域的全局分布。大量的实验结果表明，我们的方法在处理高度异构的数据时显著提升了性能，尤其是在标签倾斜，域倾斜，和二者共存的情况下。
 
-关键词：联邦学习、数据异质、域泛化、感知流形 -->
+关键词：联邦学习、数据异质、标签偏移、域泛化、感知流形  -->
 
 # Geometric Knowledge-Guided Localized Global Distribution Alignment for Federated Learning
 
 > **Geometric Knowledge-Guided Localized Global Distribution Alignment for Federated Learning**  
 > Yanbiao Ma*, Wei Dai*, Wenke Huang†, Jiayi Chen  
-> Accepted to CVPR 2025  [🔗Link](https://arxiv.org/pdf/2503.06457) 
+> Accepted to CVPR 2025 [🔗Link](https://arxiv.org/pdf/2503.06457)
 
 <!-- **项目整理中 待完成的工作 7/3/2025**：
 
@@ -22,6 +22,7 @@
 # 📝 Abstract
 
 Data heterogeneity in federated learning, characterized by a significant misalignment between local and global distributions, leads to divergent local optimization directions and hinders global model training.Existing studies mainly focus on optimizing local updates or global aggregation, but these indirect approaches demonstrate instability when handling highly heterogeneous data distributions, especially in scenarios where label skew and domain skew coexist.To address this, we propose a geometry-guided data generation method that centers on simulating the global embedding distribution locally. We first introduce the concept of the geometric shape of an embedding distribution and then address the challenge of obtaining global geometric shapes under privacy constraints. Subsequently, we propose GGEUR, which leverages global geometric shapes to guide the generation of new samples, enabling a closer approximation to the ideal global distribution.In single-domain scenarios, we augment samples based on global geometric shapes to enhance model generalization;in multi-domain scenarios, we further employ class prototypes to simulate the global distribution across domains.Extensive experimental results demonstrate that our method significantly enhances the performance of existing approaches in handling highly heterogeneous data, including scenarios with label skew, domain skew, and their coexistence.
+
 <!-- --- -->
 
 <!-- ## 🔑 Key words
@@ -48,7 +49,6 @@ Office-Home-LDS/
 └── README.md                  #  Project documentation
 ```
 
-
 ---
 
 <!-- # ⚙️ Engineering -->
@@ -58,16 +58,18 @@ Office-Home-LDS/
 ## Provide two options
 
 **(1): Download dependency**
+
 ```bash
 conda create -n GGEUR python=3.9
 conda activate GGEUR
-pip install -r requirements.txt  
-```
-**(2): Download environment (prefer)**
-```bash
-conda env create -f environment.yaml 
+pip install -r requirements.txt
 ```
 
+**(2): Download environment (prefer)**
+
+```bash
+conda env create -f environment.yaml
+```
 
 ---
 
@@ -82,7 +84,6 @@ conda env create -f environment.yaml
 #### Dataset index parsing:
 
 > The CIFAR dataset is sorted by subsets of the same class, so the indexing process is directly arranged by the number of classes.
-
 
 #### Optional Parameters
 
@@ -170,8 +171,6 @@ Label IDs (`n + 8 digits`) will be indexed.For consistency, the `n` prefix will 
 - 📝 `TinyImageNet_Val.py` (validation set partitioning)
   At this point, we have completed the reconstruction of the TinyImageNet dataset, laying the groundwork for the subsequent indexing and partitioning tasks.
 
-
-
 #### Parameters
 
 | Parameter          | Type    | Description             |
@@ -179,7 +178,6 @@ Label IDs (`n + 8 digits`) will be indexed.For consistency, the `n` prefix will 
 | `num_clients`      | integer | Number of clients       |
 | `alpha`            | float   | Dirichlet coefficient   |
 | `min_require_size` | integer | Minimum allocation size |
-
 
 #### Run Scripts
 
@@ -190,7 +188,6 @@ python data_distribution_TinyImageNet.py       #  Partition training set
 python TinyImageNet_val_index_tag_img_matching_test.py  # Validate processed validation set
 python TinyImageNet_val_features.py            # Extract validation set features
 ```
-
 
 #### Output
 
@@ -206,7 +203,9 @@ python TinyImageNet_val_features.py            # Extract validation set features
 {dataset_name}/val_context/val_labels.npy                     # Labels corresponding to validation set indices
 {dataset_name}/class_{class_label}_val_indices.npy            # Indices of each class in validation set
 ```
+
 ---
+
 ## ✅ 2. Cross Indexing
 
 We have obtained the data indexes for the CIFAR-10, CIFAR-100, and TinyImageNet datasets, including the data indexes for each client and each class.
@@ -415,7 +414,7 @@ python FL_MLP_200.py  # Train on TinyImageNet dataset
 
 ---
 
-# 🚀  Cross-Domain Scenarios
+# 🚀 Cross-Domain Scenarios
 
 We conducted experiments on the **Digits**, **PACS**, and **Office-Caltech-10** datasets, and proposed a new dataset called **Office-Home-LDS**.<br>
 Following standard cross-domain work:
@@ -1115,8 +1114,10 @@ When I completed this project, I was a third-year undergraduate student. 🌿 I 
 
 ---
 
-## 💡 Citation  
-If you find our work useful, please cite it using the following BibTeX format:  
+## 💡 Citation
+
+If you find our work useful, please cite it using the following BibTeX format:
+
 <!-- ```bibtex
 @inproceedings{ma2025geometric,
   title={Geometric Knowledge-Guided Localized Global Distribution Alignment for Federated Learning},
@@ -1126,6 +1127,7 @@ If you find our work useful, please cite it using the following BibTeX format:
   note={Accepted}
 }
 ``` -->
+
 ```bibtex
 @article{ma2025geometric,
   title={Geometric Knowledge-Guided Localized Global Distribution Alignment for Federated Learning},
@@ -1136,5 +1138,6 @@ If you find our work useful, please cite it using the following BibTeX format:
 }
 ```
 
-## 📧 Contact 
+## 📧 Contact
+
 **For any questions or help, feel welcome to write an email to <br> 22012100039@stu.xidian.edu.cn or wdai@stu.xidian.edu.cn**
