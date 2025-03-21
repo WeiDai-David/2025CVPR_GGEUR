@@ -65,10 +65,11 @@ conda activate GGEUR
 pip install -r requirements.txt
 ```
 
-**(2): Download environment (prefer)**
+**(2): Download environment (Windows)**
 
 ```bash
-conda env create -f environment.yaml
+conda env create -f environment.yml
+conda activate GGEUR
 ```
 
 ---
